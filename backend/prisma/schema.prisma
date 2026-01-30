@@ -1,0 +1,161 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password      String
+  role          UserRole  @default(CANDIDATE)
+  firstName     String?
+  lastName      String?
+  company       String?
+  isVerified    Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Relationships
+  createdSimulations Simulation[] @relation("EmployerSimulations")
+  simulations       UserSimulation[]
+  submissions       Submission[]
+  
+  @@index([email])
+}
+
+enum UserRole {
+  EMPLOYER
+  CANDIDATE
+  ADMIN
+}
+
+model Simulation {
+  id              String          @id @default(uuid())
+  title           String
+  description     String?
+  duration        Int             // in minutes
+  isPublished     Boolean         @default(false)
+  isBlindMode     Boolean         @default(true)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  // Relationships
+  employerId      String
+  employer        User            @relation("EmployerSimulations", fields: [employerId], references: [id])
+  steps           SimulationStep[]
+  invitations     Invitation[]
+  submissions     Submission[]
+  rubric          Rubric?
+  
+  @@index([employerId])
+}
+
+model SimulationStep {
+  id              String          @id @default(uuid())
+  simulationId    String
+  simulation      Simulation      @relation(fields: [simulationId], references: [id])
+  type            StepType
+  title           String
+  instructions    String
+  content         Json?           // For code snippets, documents, etc.
+  order           Int
+  aiPersona       String?         // e.g., "impatient manager"
+  expectedOutput  Json?           // For automated grading
+  
+  @@index([simulationId, order])
+}
+
+enum StepType {
+  AI_CHAT
+  CODE_REVIEW
+  DOCUMENT_ANALYSIS
+  MULTIPLE_CHOICE
+}
+
+model Rubric {
+  id              String          @id @default(uuid())
+  simulationId    String          @unique
+  simulation      Simulation      @relation(fields: [simulationId], references: [id])
+  criteria        Json            // Array of grading criteria
+  weights         Json            // Weights for each criteria
+  passingScore    Float           @default(70.0)
+  createdAt       DateTime        @default(now())
+}
+
+model Invitation {
+  id              String          @id @default(uuid())
+  simulationId    String
+  simulation      Simulation      @relation(fields: [simulationId], references: [id])
+  candidateId     String?
+  candidate       User?           @relation(fields: [candidateId], references: [id])
+  email           String          // For candidates not registered yet
+  token           String          @unique
+  status          InviteStatus    @default(PENDING)
+  expiresAt       DateTime
+  sentAt          DateTime        @default(now())
+  
+  @@index([simulationId, candidateId])
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  COMPLETED
+  EXPIRED
+}
+
+model UserSimulation {
+  id              String          @id @default(uuid())
+  userId          String
+  user            User            @relation(fields: [userId], references: [id])
+  simulationId    String
+  simulation      Simulation      @relation(fields: [simulationId], references: [id])
+  status          SimulationStatus @default(IN_PROGRESS)
+  startedAt       DateTime        @default(now())
+  completedAt     DateTime?
+  timeSpent       Int?            // in seconds
+  
+  @@unique([userId, simulationId])
+  @@index([simulationId])
+}
+
+enum SimulationStatus {
+  INVITED
+  IN_PROGRESS
+  COMPLETED
+  EXPIRED
+}
+
+model Submission {
+  id              String          @id @default(uuid())
+  userId          String
+  user            User            @relation(fields: [userId], references: [id])
+  simulationId    String
+  simulation      Simulation      @relation(fields: [simulationId], references: [id])
+  stepId          String
+  step            SimulationStep  @relation(fields: [stepId], references: [id])
+  content         Json            // User's response
+  aiFeedback      Json?           // AI evaluation
+  score           Float?
+  completedAt     DateTime        @default(now())
+  integrityFlags  String[]        // e.g., ["TAB_SWITCH", "COPY_PASTE"]
+  
+  @@index([userId, simulationId])
+}
+
+model Analytics {
+  id              String          @id @default(uuid())
+  simulationId    String
+  simulation      Simulation      @relation(fields: [simulationId], references: [id])
+  totalCandidates Int
+  avgScore        Float
+  completionRate  Float
+  diversityData   Json?           // Anonymous demographic data for AA reporting
+  createdAt       DateTime        @default(now())
+  
+  @@index([simulationId])
+}
