@@ -2,7 +2,8 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { CheckCircle, Zap, Shield, BarChart3, Users, Clock } from 'lucide-react'
+// እዚህ ጋር Briefcase ተጨምሯል
+import { CheckCircle, Zap, Shield, BarChart3, Users, Clock, Briefcase } from 'lucide-react' 
 import Navbar from '@/components/Navbar'
 
 const LandingPage: React.FC = () => {

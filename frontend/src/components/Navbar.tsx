@@ -13,7 +13,6 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Menu, X, User, Briefcase, LogOut, Settings, Moon, Sun } from 'lucide-react'
 import NotificationCenter from './NotificationCenter'
-import { cn } from '@/lib/utils'
 import { useTheme } from '@/hooks/useTheme'
 
 const Navbar: React.FC = () => {
