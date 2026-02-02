@@ -1,7 +1,7 @@
 export const APP_CONFIG = {
   SITE_NAME: 'SimuAI',
   DESCRIPTION: 'Revolutionize hiring with AI-powered skill assessments',
-  BASE_URL: process.env.VITE_BASE_URL || 'http://localhost:3000',
+  BASE_URL: import.meta.env.VITE_BASE_URL || 'http://localhost:3000',
   API_TIMEOUT: 30000,
   MAX_FILE_SIZE: 5 * 1024 * 1024, // 5MB
   SUPPORTED_IMAGE_TYPES: ['image/jpeg', 'image/png', 'image/gif'],

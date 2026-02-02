@@ -71,8 +71,6 @@ export const useIntegrityMonitor = ({
       if (socketRef.current) socketRef.current.close()
     }
   }, [addViolation, enabled, simulationId])
-
-  // አሁን Hook-ኡ የሚመልሰው መረጃ Reactive ነው
   return {
     violations,
     clearViolations: () => setViolations([]),

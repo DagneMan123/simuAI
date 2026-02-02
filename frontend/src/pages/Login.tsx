@@ -25,81 +25,112 @@ const Login: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // 1. Unified Login: Email and Password only. Role is determined by the server.
       const user = await login(email, password);
       
-      // 2. Determine Redirection Path
       const from = (location.state as any)?.from?.pathname;
       
       if (from) {
         navigate(from, { replace: true });
       } else {
-        // Role-based navigation logic
         switch (user.role) {
           case 'ADMIN':
             navigate('/admin');
             break;
           case 'EMPLOYER':
-            navigate('/dashboard');
+            navigate('/employer/dashboard');
             break;
           case 'CANDIDATE':
-            navigate('/my-assessments');
+            navigate('/candidate/dashboard');
             break;
           default:
             navigate('/');
         }
       }
     } catch (err: any) {
-      // Professional error handling
-      const errorMessage = err.response?.data?.error || 'Invalid credentials. Please try again.';
+      const errorMessage = err.response?.data?.error || err.message || 'Invalid credentials. Please try again.';
       setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleCreateAccount = () => {
+    navigate('/register');
+  };
+
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-gray-950 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md shadow-2xl border-none">
-        <CardHeader className="space-y-1 text-center">
-          <div className="flex justify-center mb-2">
-            <div className="p-3 bg-blue-600/10 rounded-full">
+    <div 
+      className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
+      style={{
+        // Add your background image here
+        backgroundImage: `url('https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backgroundAttachment: 'fixed', // Optional: fixed background on scroll
+      }}
+    >
+      {/* Optional: Add a dark overlay for better text readability */}
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px]" />
+      
+      {/* Optional: Add a gradient overlay for more style */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 to-purple-900/20" />
+      
+      {/* Decorative elements */}
+      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-blue-400 to-blue-300 z-20" />
+      
+      {/* Login Card */}
+      <Card className="w-full max-w-md shadow-2xl border-0 bg-white/95 backdrop-blur-sm relative z-10">
+        <CardHeader className="space-y-1 text-center pb-6">
+          <div className="flex justify-center mb-4">
+            <div className="p-3 bg-blue-100 rounded-full">
               <LogIn className="h-8 w-8 text-blue-600" />
             </div>
           </div>
-          <CardTitle className="text-3xl font-bold tracking-tight">Welcome Back</CardTitle>
-          <CardDescription className="text-slate-500">
+          <CardTitle className="text-3xl font-bold text-gray-900">
+            Welcome Back
+          </CardTitle>
+          <CardDescription className="text-gray-600">
             Securely access your SimuAI dashboard
           </CardDescription>
         </CardHeader>
+        
         <CardContent>
           {error && (
-            <Alert variant="destructive" className="mb-6 animate-in fade-in zoom-in duration-300">
-              <AlertDescription>{error}</AlertDescription>
+            <Alert variant="destructive" className="mb-6">
+              <AlertDescription className="text-white">
+                {error}
+              </AlertDescription>
             </Alert>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
+              <Label htmlFor="email" className="text-gray-700 font-medium">
+                Email Address
+              </Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                 <Input
                   id="email"
                   type="email"
                   placeholder="name@company.com"
-                  className="pl-10 h-11 border-slate-200 focus:ring-2 focus:ring-blue-500 transition-all"
+                  className="pl-11 h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500 
+                           text-gray-900 placeholder:text-gray-500"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   autoComplete="email"
+                  disabled={isLoading}
                 />
               </div>
             </div>
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password" className="text-gray-700 font-medium">
+                  Password
+                </Label>
                 <Link
                   to="/forgot-password"
                   className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
@@ -108,30 +139,37 @@ const Login: React.FC = () => {
                 </Link>
               </div>
               <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="••••••••"
-                  className="pl-10 pr-10 h-11 border-slate-200 focus:ring-2 focus:ring-blue-500 transition-all"
+                  placeholder="Enter your password"
+                  className="pl-11 pr-11 h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500 
+                           text-gray-900 placeholder:text-gray-500"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   autoComplete="current-password"
+                  disabled={isLoading}
                 />
                 <button
                   type="button"
-                  className="absolute right-3 top-3 text-slate-400 hover:text-slate-600"
+                  className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 transition-colors"
                   onClick={() => setShowPassword(!showPassword)}
+                  disabled={isLoading}
                 >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
             </div>
 
             <Button 
               type="submit" 
-              className="w-full h-11 text-base font-semibold bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all active:scale-[0.98]" 
+              className="w-full h-11 text-base font-semibold 
+                         bg-blue-600 hover:bg-blue-700 
+                         text-white 
+                         transition-colors duration-200
+                         disabled:opacity-50 disabled:cursor-not-allowed" 
               disabled={isLoading}
             >
               {isLoading ? (
@@ -140,34 +178,63 @@ const Login: React.FC = () => {
                   Signing in...
                 </>
               ) : (
-                'Log In'
+                'Sign In'
               )}
             </Button>
           </form>
 
-          <div className="mt-8 relative">
+          <div className="mt-8 mb-6 relative">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-slate-200" />
+              <span className="w-full border-t border-gray-200" />
             </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white dark:bg-gray-900 px-2 text-slate-400">
-                New to the platform?
+            <div className="relative flex justify-center text-sm">
+              <span className="bg-white px-4 text-gray-500">
+                Don't have an account?
               </span>
             </div>
           </div>
 
-          <Button asChild variant="outline" className="w-full mt-6 h-11 border-slate-200 hover:bg-slate-50">
-            <Link to="/register">Create an account</Link>
+          <Button 
+            onClick={handleCreateAccount}
+            variant="outline" 
+            className="w-full h-11 border-gray-300 hover:bg-gray-50 text-gray-700"
+          >
+            Create an account
           </Button>
+          
+          {/* Alternative link */}
+          <div className="mt-4 text-center">
+            <p className="text-sm text-gray-600">
+              Or{' '}
+              <Link 
+                to="/register" 
+                className="font-medium text-blue-600 hover:text-blue-700 hover:underline"
+              >
+                register here
+              </Link>
+            </p>
+          </div>
         </CardContent>
-        <CardFooter className="flex flex-col text-center space-y-2 pb-8">
-          <p className="text-xs text-slate-400 px-6">
+        
+        <CardFooter className="flex flex-col text-center space-y-3 pb-6 pt-6 border-t border-gray-100">
+          <p className="text-sm text-gray-500 px-6">
             By logging in, you agree to our{' '}
-            <Link to="/terms" className="text-slate-600 hover:underline">Terms of Service</Link> and{' '}
-            <Link to="/privacy" className="text-slate-600 hover:underline">Privacy Policy</Link>.
+            <Link to="/terms" className="text-blue-600 hover:underline">Terms</Link> and{' '}
+            <Link to="/privacy" className="text-blue-600 hover:underline">Privacy Policy</Link>.
           </p>
         </CardFooter>
       </Card>
+
+      {/* Test button (remove in production) */}
+      <button
+        onClick={() => {
+          setEmail('demo@example.com');
+          setPassword('password123');
+        }}
+        className="fixed bottom-4 right-4 text-xs bg-gray-800 text-white px-3 py-1 rounded opacity-70 hover:opacity-100 transition-opacity z-20"
+      >
+        Fill Demo Credentials
+      </button>
     </div>
   );
 };
