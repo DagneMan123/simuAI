@@ -5,7 +5,6 @@ import {
   Clock, 
   CheckCircle, 
   XCircle,
-  BarChart3,
   Target,
   Download,
   Share2,
@@ -13,9 +12,7 @@ import {
   Eye,
   FileText,
   Calendar,
-  Percent,
   Star,
-  Zap,
   Trophy,
   Medal,
   Crown
@@ -41,7 +38,7 @@ import {
   Legend,
   LineChart,
   Line,
-  Cell
+  
 } from 'recharts';
 
 interface TestResult {
@@ -76,7 +73,7 @@ interface ResultCardProps {
 
 const ResultCard: React.FC<ResultCardProps> = ({
   result,
-  showDetails = false,
+  
   onRetake,
   onDownload,
   onShare

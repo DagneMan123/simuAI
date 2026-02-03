@@ -1,13 +1,11 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { 
   Settings as SettingsIcon,
   Shield,
   Bell,
-  Globe,
-  Database,
+  
   Mail,
-  Key,
-  Users,
+  
   CreditCard,
   Zap,
   Save,

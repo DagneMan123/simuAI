@@ -12,9 +12,7 @@ import {
   MessageSquare,
   FileText,
   Video,
-  Type,
-  ChevronDown,
-  HelpCircle
+  Type
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -59,6 +57,13 @@ interface SimulationTemplate {
   questions: Question[];
 }
 
+interface NewQuestionState {
+  type: 'text' | 'code' | 'video' | 'multiple-choice';
+  question: string;  // አሁን ሁልጊዜ string ነው
+  timeLimit: number;
+  points: number;
+}
+
 const SimulationBuilder: React.FC = () => {
   const [simulation, setSimulation] = useState({
     title: '',
@@ -75,9 +80,9 @@ const SimulationBuilder: React.FC = () => {
     questions: [] as Question[],
   });
 
-  const [newQuestion, setNewQuestion] = useState<Partial<Question>>({
+  const [newQuestion, setNewQuestion] = useState<NewQuestionState>({
     type: 'text',
-    question: '',
+    question: '',  // ሁልጊዜ string እንዲሆን ማረጋገጫ
     timeLimit: 5,
     points: 10,
   });
@@ -115,11 +120,11 @@ const SimulationBuilder: React.FC = () => {
   ];
 
   const addQuestion = () => {
-    if (!newQuestion.question.trim()) return;
+    if (!newQuestion.question.trim()) return;  // አሁን ስህተት የለም
 
     const question: Question = {
       id: Date.now().toString(),
-      type: newQuestion.type as Question['type'],
+      type: newQuestion.type,
       question: newQuestion.question,
       timeLimit: newQuestion.timeLimit || 5,
       points: newQuestion.points || 10,
@@ -148,7 +153,7 @@ const SimulationBuilder: React.FC = () => {
   };
 
   const duplicateQuestion = (question: Question) => {
-    const duplicated = {
+    const duplicated: Question = {
       ...question,
       id: Date.now().toString(),
     };
@@ -377,11 +382,12 @@ const SimulationBuilder: React.FC = () => {
                     {questionTypes.map((type) => (
                       <button
                         key={type.value}
+                        type="button"
                         className={`
                           p-3 rounded-lg border flex flex-col items-center gap-2 transition-colors
                           ${newQuestion.type === type.value ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:bg-gray-50'}
                         `}
-                        onClick={() => setNewQuestion(prev => ({ ...prev, type: type.value as Question['type'] }))}
+                        onClick={() => setNewQuestion(prev => ({ ...prev, type: type.value as NewQuestionState['type'] }))}
                       >
                         <div className={`p-2 rounded-full ${type.color}`}>
                           {type.icon}
