@@ -13,7 +13,6 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { useIntegrity } from '@/hooks/useIntegrity';
-import { INTEGRITY_MESSAGES } from '@/constants/integrity';
 
 const ArenaLayout: React.FC = () => {
   const { examId } = useParams();

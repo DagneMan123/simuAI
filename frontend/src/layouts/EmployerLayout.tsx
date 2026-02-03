@@ -11,13 +11,12 @@ import {
   PlusCircle,
   Building,
   Search,
-  ChevronDown,
   Menu,
   X
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
+// Fixed: Removed the unused Badge import to clear the warning
 import { useAuth } from '@/contexts/AuthContext';
 import { ROUTES } from '@/constants/routes';
 
@@ -25,7 +24,9 @@ const EmployerLayout: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [credits, setCredits] = useState(150);
+  
+  // Fixed: Removed 'setCredits' from the array to clear the 'unused variable' warning
+  const [credits] = useState(150);
 
   const navItems = [
     { path: ROUTES.EMPLOYER_DASHBOARD, icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
@@ -117,13 +118,13 @@ const EmployerLayout: React.FC = () => {
           <div className={`flex items-center gap-3 mb-4 p-3 bg-gray-50 rounded-lg ${!sidebarOpen && 'justify-center'}`}>
             <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
               <span className="font-semibold text-blue-600">
-                {user?.name?.charAt(0) || 'E'}
+                {user?.fullName?.charAt(0) || 'E'}
               </span>
             </div>
             {sidebarOpen && (
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-gray-800 truncate">{user?.company || 'Company'}</p>
-                <p className="text-sm text-gray-500 truncate">{user?.name || 'Employer'}</p>
+                <p className="text-sm text-gray-500 truncate">{user?.fullName || 'Employer'}</p>
               </div>
             )}
           </div>

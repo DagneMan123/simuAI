@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react';
 import { authApi } from '../lib/api';
 
-
 export type UserRole = 'EMPLOYER' | 'CANDIDATE' | 'ADMIN';
 
 export interface User {
@@ -9,7 +8,7 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
-  fullName?: string; // 
+  fullName: string; // Changed from optional to required for consistency
   company: string | null;
   role: UserRole; 
 }
@@ -23,7 +22,6 @@ export interface RegisterData {
   company?: string;
 }
 
-
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
@@ -34,8 +32,8 @@ interface AuthContextType {
   updateUser: (updatedFields: Partial<User>) => void;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
+// FIX: Added 'export' here so 'import { AuthContext }' works in other files
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -45,7 +43,6 @@ export const useAuth = () => {
   return context;
 };
 
-
 interface AuthProviderProps {
   children: ReactNode;
 }
@@ -54,7 +51,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  
   const logout = useCallback(() => {
     authApi.logout();
     localStorage.removeItem('user');
@@ -63,7 +59,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(null);
   }, []);
 
-  
   useEffect(() => {
     const initAuth = () => {
       try {
@@ -85,21 +80,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     initAuth();
   }, [logout]);
 
-  
   const login = async (email: string, password: string): Promise<User> => {
     try {
       const response = await authApi.login(email, password);
       const { user: userData, tokens } = response.data;
       
-      
       localStorage.setItem('accessToken', tokens.accessToken);
       localStorage.setItem('refreshToken', tokens.refreshToken);
       
-     
-      const authenticatedUser = {
+      // FIX: Changed 'name' to 'fullName' to match the User interface
+      const authenticatedUser: User = {
         ...userData,
-        name: `${userData.firstName} ${userData.lastName}`
-      } as User;
+        fullName: `${userData.firstName} ${userData.lastName}`
+      };
 
       localStorage.setItem('user', JSON.stringify(authenticatedUser));
       setUser(authenticatedUser);
@@ -110,7 +103,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  
   const register = async (data: RegisterData) => {
     try {
       const response = await authApi.register(data);
@@ -119,10 +111,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       localStorage.setItem('accessToken', tokens.accessToken);
       localStorage.setItem('refreshToken', tokens.refreshToken);
       
-      const registeredUser = {
+      // FIX: Changed 'name' to 'fullName' to match the User interface
+      const registeredUser: User = {
         ...userData,
-        name: `${userData.firstName} ${userData.lastName}`
-      } as User;
+        fullName: `${userData.firstName} ${userData.lastName}`
+      };
 
       localStorage.setItem('user', JSON.stringify(registeredUser));
       setUser(registeredUser);
@@ -132,15 +125,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  // የተጠቃሚውን መረጃ (ለምሳሌ Profile ሲቀየር) ለማደስ
   const updateUser = (updatedFields: Partial<User>) => {
     if (!user) return;
     const updatedUser = { ...user, ...updatedFields };
+    
+    // Automatically update fullName if first or last name changes
+    if (updatedFields.firstName || updatedFields.lastName) {
+        updatedUser.fullName = `${updatedUser.firstName} ${updatedUser.lastName}`;
+    }
+
     localStorage.setItem('user', JSON.stringify(updatedUser));
     setUser(updatedUser);
   };
 
-  
   const contextValue = useMemo(() => ({
     user,
     isLoading,

@@ -1,4 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+
+interface Violation {
+  message: string;
+  timestamp: number;
+}
 
 interface IntegrityOptions {
   onWarning?: (warningCount: number) => void;
@@ -13,54 +18,67 @@ export const useIntegrity = (options: IntegrityOptions = {}) => {
     maxWarnings = 3,
   } = options;
 
-  const [warningCount, setWarningCount] = useState(0);
+  // Changed warningCount (number) to violations (array) to match ArenaLayout
+  const [violations, setViolations] = useState<Violation[]>([]);
   const [isActive, setIsActive] = useState(true);
   const [lastActivity, setLastActivity] = useState(Date.now());
   const [isFullScreen, setIsFullScreen] = useState(false);
   
   const warningSoundRef = useRef<HTMLAudioElement | null>(null);
 
-  // የማስጠንቀቂያ ድምጽ መጫን
+  // Initialize Audio
   useEffect(() => {
     warningSoundRef.current = new Audio('/sounds/warning.mp3');
   }, []);
 
-  // የTab ለውጥ መከታተያ
+  // Use useCallback to prevent unnecessary re-renders and handle logic
+  const addViolation = useCallback((message: string) => {
+    setViolations((prev) => {
+      const newViolations = [...prev, { message, timestamp: Date.now() }];
+      
+      // Play Audio
+      if (warningSoundRef.current) {
+        warningSoundRef.current.play().catch(() => {});
+      }
+
+      // Call external callbacks
+      onWarning?.(newViolations.length);
+
+      if (newViolations.length >= maxWarnings) {
+        onForceSubmit?.();
+      }
+      
+      return newViolations;
+    });
+  }, [maxWarnings, onWarning, onForceSubmit]);
+
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden) {
         setIsActive(false);
-        const newWarningCount = warningCount + 1;
-        setWarningCount(newWarningCount);
-        
-        // ድምጽ ማጫወት
-        if (warningSoundRef.current) {
-          warningSoundRef.current.play().catch(() => {
-            // ድምጽ ማጫወት ላይ ስህተት ቢፈጠር ችላ ማለት
-          });
-        }
-        
-        // የማስጠንቀቂያ ተግባር ማስኬድ
-        onWarning?.(newWarningCount);
-        
-        // ከፍተኛ የማስጠንቀቂያ ብዛት ከተደረሰ
-        if (newWarningCount >= maxWarnings) {
-          onForceSubmit?.();
-        }
+        addViolation("Tab switch detected! This activity is monitored.");
       } else {
         setIsActive(true);
       }
     };
 
+    const handleFullScreenChange = () => {
+      const isFull = !!(
+        document.fullscreenElement || 
+        (document as any).webkitFullscreenElement ||
+        (document as any).mozFullScreenElement ||
+        (document as any).msFullscreenElement
+      );
+      setIsFullScreen(isFull);
+    };
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    
-    // የሙሉ ማያ ገጽ መከታተያ
     document.addEventListener('fullscreenchange', handleFullScreenChange);
     document.addEventListener('webkitfullscreenchange', handleFullScreenChange);
     document.addEventListener('mozfullscreenchange', handleFullScreenChange);
     document.addEventListener('MSFullscreenChange', handleFullScreenChange);
 
-    // የአካቢያ ጊዜ መከታተያ
+    // Activity tracking logic
     const activityEvents = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart'];
     const updateActivity = () => setLastActivity(Date.now());
     
@@ -68,11 +86,12 @@ export const useIntegrity = (options: IntegrityOptions = {}) => {
       document.addEventListener(event, updateActivity);
     });
 
-    // የአካቢያ ጊዜ ቼክ
     const activityInterval = setInterval(() => {
       const inactiveTime = Date.now() - lastActivity;
-      if (inactiveTime > 30000) { // 30 seconds of inactivity
+      if (inactiveTime > 30000) { // 30 seconds
         setIsActive(false);
+      } else {
+        setIsActive(true);
       }
     }, 5000);
 
@@ -89,51 +108,47 @@ export const useIntegrity = (options: IntegrityOptions = {}) => {
       
       clearInterval(activityInterval);
     };
-  }, [warningCount, lastActivity, maxWarnings, onWarning, onForceSubmit]);
+  }, [lastActivity, addViolation]);
 
-  const handleFullScreenChange = () => {
-    const isFull = !!(document.fullscreenElement || 
-                      (document as any).webkitFullscreenElement ||
-                      (document as any).mozFullScreenElement ||
-                      (document as any).msFullscreenElement);
-    setIsFullScreen(isFull);
-  };
-
-  const requestFullScreen = () => {
+  // Naming adjusted to match your ArenaLayout component
+  const enterFullscreen = async () => {
     const element = document.documentElement;
-    if (element.requestFullscreen) {
-      element.requestFullscreen();
-    } else if ((element as any).webkitRequestFullscreen) {
-      (element as any).webkitRequestFullscreen();
-    } else if ((element as any).mozRequestFullScreen) {
-      (element as any).mozRequestFullScreen();
-    } else if ((element as any).msRequestFullscreen) {
-      (element as any).msRequestFullscreen();
+    try {
+      if (element.requestFullscreen) {
+        await element.requestFullscreen();
+      } else if ((element as any).webkitRequestFullscreen) {
+        await (element as any).webkitRequestFullscreen();
+      }
+      setIsFullScreen(true);
+    } catch (err) {
+      console.error("Fullscreen error", err);
     }
   };
 
-  const exitFullScreen = () => {
-    if (document.exitFullscreen) {
-      document.exitFullscreen();
-    } else if ((document as any).webkitExitFullscreen) {
-      (document as any).webkitExitFullscreen();
-    } else if ((document as any).mozCancelFullScreen) {
-      (document as any).mozCancelFullScreen();
-    } else if ((document as any).msExitFullscreen) {
-      (document as any).msExitFullscreen();
+  const exitFullscreen = async () => {
+    try {
+      if (document.exitFullscreen) {
+        await document.exitFullscreen();
+      } else if ((document as any).webkitExitFullscreen) {
+        await (document as any).webkitExitFullscreen();
+      }
+      setIsFullScreen(false);
+    } catch (err) {
+      console.error("Exit fullscreen error", err);
     }
   };
 
   const resetWarnings = () => {
-    setWarningCount(0);
+    setViolations([]);
   };
 
   return {
-    warningCount,
+    violations,            // Array for ArenaLayout compatibility
+    warningCount: violations.length, 
     isActive,
     isFullScreen,
-    requestFullScreen,
-    exitFullScreen,
+    enterFullscreen,       // Renamed for ArenaLayout compatibility
+    exitFullscreen,        // Renamed for ArenaLayout compatibility
     resetWarnings,
   };
 };

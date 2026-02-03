@@ -9,7 +9,6 @@ import {
   LogOut,
   Bell,
   Search,
-  ChevronDown,
   Menu,
   X,
   Clock,
@@ -26,7 +25,9 @@ const CandidateLayout: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [profileScore, setProfileScore] = useState(75);
+  
+  // Fixed: Removed setProfileScore to clear the 'unused variable' warning
+  const [profileScore] = useState(75);
 
   const navItems = [
     { path: ROUTES.CANDIDATE_DASHBOARD, icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
@@ -141,12 +142,12 @@ const CandidateLayout: React.FC = () => {
           <div className={`flex items-center gap-3 mb-4 p-3 bg-gray-50 rounded-lg ${!sidebarOpen && 'justify-center'}`}>
             <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
               <span className="font-semibold text-green-600">
-                {user?.name?.charAt(0) || 'C'}
+                {user?.fullName?.charAt(0) || 'C'}
               </span>
             </div>
             {sidebarOpen && (
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-800 truncate">{user?.name || 'Candidate'}</p>
+                <p className="font-semibold text-gray-800 truncate">{user?.fullName || 'Candidate'}</p>
                 <p className="text-sm text-gray-500 truncate">{user?.email || 'candidate@example.com'}</p>
               </div>
             )}
@@ -212,7 +213,6 @@ const CandidateLayout: React.FC = () => {
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-sm text-gray-500">
               © {new Date().getFullYear()} SimuAI Candidate Portal. 
-              <span className="ml-2 font-medium text-green-600">Your career journey starts here!</span>
             </p>
             <div className="flex items-center gap-6">
               <a href="#" className="text-sm text-gray-500 hover:text-gray-700">Career Tips</a>
