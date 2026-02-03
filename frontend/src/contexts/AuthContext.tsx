@@ -9,7 +9,7 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
-  name?: string; // 
+  fullName?: string; // 
   company: string | null;
   role: UserRole; 
 }
