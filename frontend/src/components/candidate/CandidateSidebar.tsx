@@ -10,7 +10,6 @@ import {
   Settings,
   HelpCircle,
   TrendingUp,
-  Bell,
   Shield,
   Star,
   Calendar,

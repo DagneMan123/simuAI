@@ -1,13 +1,6 @@
 import React, { useState } from 'react';
 import { 
-  Edit, 
-  Trash2, 
-  UserCheck,
-  UserX,
-  Mail,
-  MoreVertical,
-  Search,
-  Filter
+  Edit, Trash2, UserCheck,  MoreVertical, Search, Filter, UserPlus, AlertCircle 
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,6 +9,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
@@ -35,6 +29,7 @@ import {
 } from '@/components/ui/select';
 import { UserRole, ROLE_LABELS, ROLE_COLORS } from '@/constants/roles';
 
+// 1. Interface with more details
 interface User {
   id: string;
   name: string;
@@ -65,18 +60,26 @@ const UserTable: React.FC<UserTableProps> = ({
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
+  // 2. Advanced Filtering
   const filteredUsers = users.filter(user => {
     const matchesSearch = searchTerm === '' || 
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.company?.toLowerCase().includes(searchTerm.toLowerCase());
-    
+      user.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = roleFilter === 'all' || user.role === roleFilter;
     const matchesStatus = statusFilter === 'all' || user.status === statusFilter;
-    
     return matchesSearch && matchesRole && matchesStatus;
   });
+
+  // 3. Pagination Logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
 
   const getStatusColor = (status: User['status']) => {
     switch (status) {
@@ -88,172 +91,85 @@ const UserTable: React.FC<UserTableProps> = ({
     }
   };
 
-  const getStatusLabel = (status: User['status']) => {
-    return status.charAt(0).toUpperCase() + status.slice(1);
-  };
-
   const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedUsers(filteredUsers.map(user => user.id));
-    } else {
-      setSelectedUsers([]);
-    }
+    if (checked) setSelectedUsers(currentItems.map(user => user.id));
+    else setSelectedUsers([]);
   };
 
   const handleSelectUser = (userId: string, checked: boolean) => {
-    if (checked) {
-      setSelectedUsers(prev => [...prev, userId]);
-    } else {
-      setSelectedUsers(prev => prev.filter(id => id !== userId));
-    }
-  };
-
-  const handleBulkAction = (action: 'activate' | 'deactivate' | 'delete') => {
-    if (selectedUsers.length === 0) return;
-    
-    if (action === 'delete') {
-      if (window.confirm(`Are you sure you want to delete ${selectedUsers.length} user(s)?`)) {
-        selectedUsers.forEach(id => onDelete?.(id));
-        setSelectedUsers([]);
-      }
-    } else if (action === 'activate') {
-      selectedUsers.forEach(id => onStatusChange?.(id, 'active'));
-      setSelectedUsers([]);
-    } else if (action === 'deactivate') {
-      selectedUsers.forEach(id => onStatusChange?.(id, 'inactive'));
-      setSelectedUsers([]);
-    }
+    if (checked) setSelectedUsers(prev => [...prev, userId]);
+    else setSelectedUsers(prev => prev.filter(id => id !== userId));
   };
 
   return (
     <div className="space-y-4">
-      {/* Filters and Search */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="flex-1">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Search users by name, email, or company..."
-              className="pl-10"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
+      {/* Search & Filters */}
+      <div className="flex flex-col sm:flex-row gap-4 bg-white p-4 rounded-xl border shadow-sm">
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            placeholder="Search users..."
+            className="pl-10 h-10 border-none bg-gray-50 focus-visible:ring-1"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
         </div>
         <div className="flex gap-2">
           <Select value={roleFilter} onValueChange={setRoleFilter}>
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="Filter by Role" />
+            <SelectTrigger className="w-36 bg-gray-50 border-none">
+              <SelectValue placeholder="Role" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Roles</SelectItem>
-              <SelectItem value={UserRole.ADMIN}>{ROLE_LABELS[UserRole.ADMIN]}</SelectItem>
-              <SelectItem value={UserRole.EMPLOYER}>{ROLE_LABELS[UserRole.EMPLOYER]}</SelectItem>
-              <SelectItem value={UserRole.CANDIDATE}>{ROLE_LABELS[UserRole.CANDIDATE]}</SelectItem>
+              <SelectItem value="ADMIN">Admin</SelectItem>
+              <SelectItem value="EMPLOYER">Employer</SelectItem>
+              <SelectItem value="CANDIDATE">Candidate</SelectItem>
             </SelectContent>
           </Select>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="Filter by Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="inactive">Inactive</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="banned">Banned</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button variant="outline">
-            <Filter className="mr-2 h-4 w-4" />
-            More Filters
-          </Button>
+          <Button variant="outline" size="icon" className="shrink-0"><Filter size={18}/></Button>
+          <Button className="bg-blue-600 hover:bg-blue-700 gap-2"><UserPlus size={18}/> Add</Button>
         </div>
       </div>
 
-      {/* Bulk Actions */}
-      {selectedUsers.length > 0 && (
-        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="font-medium text-blue-700">
-              {selectedUsers.length} user(s) selected
-            </span>
-          </div>
-          <div className="flex gap-2">
-            <Button 
-              size="sm" 
-              variant="outline" 
-              onClick={() => handleBulkAction('activate')}
-              className="border-green-600 text-green-700 hover:bg-green-50"
-            >
-              <UserCheck className="mr-2 h-4 w-4" />
-              Activate
-            </Button>
-            <Button 
-              size="sm" 
-              variant="outline" 
-              onClick={() => handleBulkAction('deactivate')}
-              className="border-yellow-600 text-yellow-700 hover:bg-yellow-50"
-            >
-              <UserX className="mr-2 h-4 w-4" />
-              Deactivate
-            </Button>
-            <Button 
-              size="sm" 
-              variant="outline" 
-              onClick={() => handleBulkAction('delete')}
-              className="border-red-600 text-red-700 hover:bg-red-50"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Table */}
-      <div className="border rounded-lg bg-white overflow-hidden">
+      {/* Table Container */}
+      <div className="border rounded-xl bg-white overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <Table>
-            <TableHeader>
+            <TableHeader className="bg-gray-50">
               <TableRow>
                 <TableHead className="w-12">
-                  <input
-                    type="checkbox"
-                    checked={selectedUsers.length === filteredUsers.length && filteredUsers.length > 0}
+                  <input 
+                    type="checkbox" 
                     onChange={(e) => handleSelectAll(e.target.checked)}
                     className="rounded border-gray-300"
                   />
                 </TableHead>
-                <TableHead>User</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Last Active</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="text-xs uppercase tracking-wider">User Profile</TableHead>
+                <TableHead className="text-xs uppercase tracking-wider">Role</TableHead>
+                <TableHead className="text-xs uppercase tracking-wider">Status</TableHead>
+                <TableHead className="text-xs uppercase tracking-wider">Joined Date</TableHead>
+                <TableHead className="text-right">Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
+                <TableRow><TableCell colSpan={6} className="h-40 text-center text-gray-400 italic">Fetching users...</TableCell></TableRow>
+              ) : currentItems.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8">
-                    <div className="flex justify-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  <TableCell colSpan={6} className="h-64 text-center">
+                    <div className="flex flex-col items-center gap-2">
+                      <AlertCircle className="h-10 w-10 text-gray-200" />
+                      <p className="text-gray-500 font-medium">No users found matching your criteria.</p>
+                      <Button variant="link" onClick={() => {setSearchTerm(''); setRoleFilter('all');}}>Clear all filters</Button>
                     </div>
                   </TableCell>
                 </TableRow>
-              ) : filteredUsers.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-gray-500">
-                    No users found
-                  </TableCell>
-                </TableRow>
               ) : (
-                filteredUsers.map((user) => (
-                  <TableRow key={user.id} className="hover:bg-gray-50">
+                currentItems.map((user) => (
+                  <TableRow key={user.id} className="hover:bg-gray-50/50 transition-colors">
                     <TableCell>
-                      <input
-                        type="checkbox"
+                      <input 
+                        type="checkbox" 
                         checked={selectedUsers.includes(user.id)}
                         onChange={(e) => handleSelectUser(user.id, e.target.checked)}
                         className="rounded border-gray-300"
@@ -261,70 +177,28 @@ const UserTable: React.FC<UserTableProps> = ({
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-                          <span className="font-semibold text-gray-700">
-                            {user.name.charAt(0)}
-                          </span>
+                        <div className="h-9 w-9 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-bold text-xs uppercase">
+                          {user.name.charAt(0)}
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900">{user.name}</p>
-                          <div className="flex items-center gap-1 text-sm text-gray-500">
-                            <Mail className="h-3 w-3" />
-                            {user.email}
-                          </div>
-                          {user.company && (
-                            <p className="text-sm text-gray-500">{user.company}</p>
-                          )}
+                          <p className="font-semibold text-gray-900 text-sm">{user.name}</p>
+                          <p className="text-xs text-gray-500">{user.email}</p>
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <Badge className={ROLE_COLORS[user.role]}>
-                        {ROLE_LABELS[user.role]}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={getStatusColor(user.status)}>
-                        {getStatusLabel(user.status)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm text-gray-600">{user.lastActive}</span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm text-gray-600">{user.createdAt}</span>
-                    </TableCell>
+                    <TableCell><Badge className={`text-[10px] font-bold ${ROLE_COLORS[user.role]}`}>{ROLE_LABELS[user.role]}</Badge></TableCell>
+                    <TableCell><Badge className={`text-[10px] ${getStatusColor(user.status)}`}>{user.status.toUpperCase()}</Badge></TableCell>
+                    <TableCell className="text-xs text-gray-500">{user.createdAt}</TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
+                          <Button variant="ghost" size="icon"><MoreVertical size={16} /></Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => onEdit?.(user)}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit User
-                          </DropdownMenuItem>
-                          {user.status === 'active' ? (
-                            <DropdownMenuItem onClick={() => onStatusChange?.(user.id, 'inactive')}>
-                              <UserX className="mr-2 h-4 w-4" />
-                              Deactivate
-                            </DropdownMenuItem>
-                          ) : (
-                            <DropdownMenuItem onClick={() => onStatusChange?.(user.id, 'active')}>
-                              <UserCheck className="mr-2 h-4 w-4" />
-                              Activate
-                            </DropdownMenuItem>
-                          )}
+                        <DropdownMenuContent align="end" className="w-44">
+                          <DropdownMenuItem onClick={() => onEdit?.(user)} className="gap-2"><Edit size={14}/> Edit Profile</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => onStatusChange?.(user.id, 'active')} className="gap-2"><UserCheck size={14}/> Activate</DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem 
-                            onClick={() => onDelete?.(user.id)}
-                            className="text-red-600"
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete User
-                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => onDelete?.(user.id)} className="text-red-600 gap-2 font-medium"><Trash2 size={14}/> Delete User</DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -336,17 +210,41 @@ const UserTable: React.FC<UserTableProps> = ({
         </div>
       </div>
 
-      {/* Pagination */}
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-        <div className="text-sm text-gray-500">
-          Showing {filteredUsers.length} of {users.length} users
-        </div>
+      {/* Pagination Footer */}
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 py-2">
+        <p className="text-xs text-gray-500">
+          Showing <span className="font-bold text-gray-900">{indexOfFirstItem + 1}</span> to <span className="font-bold text-gray-900">{Math.min(indexOfLastItem, filteredUsers.length)}</span> of {filteredUsers.length} users
+        </p>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" disabled>Previous</Button>
-          <Button variant="outline" size="sm" className="bg-blue-50">1</Button>
-          <Button variant="outline" size="sm">2</Button>
-          <Button variant="outline" size="sm">3</Button>
-          <Button variant="outline" size="sm">Next</Button>
+          <Button 
+            variant="outline" size="sm" 
+            onClick={() => setCurrentPage(prev => prev - 1)} 
+            disabled={currentPage === 1}
+            className="h-8 text-xs px-4"
+          >
+            Previous
+          </Button>
+          <div className="flex items-center gap-1">
+             {[...Array(totalPages)].map((_, i) => (
+               <Button 
+                 key={i} 
+                 variant={currentPage === i + 1 ? "default" : "outline"} 
+                 size="sm" 
+                 className="h-8 w-8 p-0 text-xs"
+                 onClick={() => setCurrentPage(i + 1)}
+               >
+                 {i + 1}
+               </Button>
+             ))}
+          </div>
+          <Button 
+            variant="outline" size="sm" 
+            onClick={() => setCurrentPage(prev => prev + 1)} 
+            disabled={currentPage === totalPages}
+            className="h-8 text-xs px-4"
+          >
+            Next
+          </Button>
         </div>
       </div>
     </div>
