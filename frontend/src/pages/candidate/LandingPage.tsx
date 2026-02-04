@@ -1,11 +1,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import  {
+import {
   Box,
   Container,
   Typography,
   Button,
-  Grid,
   Card,
   CardContent,
   Paper,
@@ -14,7 +13,8 @@ import  {
   ListItemIcon,
   ListItemText,
   Divider,
-} from '@mui/material'; 
+} from '@mui/material';
+import Grid from '@mui/material/Grid'; 
 import {
   School,
   Assessment,
@@ -127,9 +127,11 @@ const LandingPage: React.FC = () => {
           Experience the future of skill assessment
         </Typography>
 
+        {/* container prop ብቻ ነው የሚጠቀመው */}
         <Grid container spacing={4}>
           {features.map((feature, index) => (
-            <Grid item xs={12} sm={6} md={4} key={index}>
+            /* size prop ነው የሚጠቀመው፤ item የሚለው አይፈለግም */
+            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={index}>
               <Card sx={{ height: '100%', transition: 'transform 0.2s', '&:hover': { transform: 'translateY(-4px)' } }}>
                 <CardContent sx={{ textAlign: 'center', p: 4 }}>
                   <Box sx={{ color: 'primary.main', mb: 2, fontSize: 48 }}>
@@ -156,7 +158,7 @@ const LandingPage: React.FC = () => {
           </Typography>
           
           <Grid container spacing={4} sx={{ mt: 4 }}>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Paper sx={{ p: 4, height: '100%' }}>
                 <List>
                   {steps.map((step, index) => (
@@ -178,7 +180,7 @@ const LandingPage: React.FC = () => {
               </Paper>
             </Grid>
             
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Box sx={{ p: 3 }}>
                 <Typography variant="h5" gutterBottom>
                   Trusted by Students and Professionals
@@ -194,7 +196,7 @@ const LandingPage: React.FC = () => {
                 
                 <Box sx={{ mt: 4 }}>
                   <Grid container spacing={2}>
-                    <Grid item xs={6}>
+                    <Grid size={{ xs: 6 }}>
                       <Typography variant="h4" color="primary" align="center">
                         10,000+
                       </Typography>
@@ -202,7 +204,7 @@ const LandingPage: React.FC = () => {
                         Assessments Taken
                       </Typography>
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid size={{ xs: 6 }}>
                       <Typography variant="h4" color="primary" align="center">
                         95%
                       </Typography>

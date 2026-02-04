@@ -63,7 +63,7 @@ const Login: React.FC = () => {
       className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
       style={{
         // Add your background image here
-        backgroundImage: `url('https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80')`,
+        backgroundImage: `url('https://www.jungmann.de/wp-content/uploads/2025/09/jst-software-leitstand-kontrollraum_1.jpg')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
