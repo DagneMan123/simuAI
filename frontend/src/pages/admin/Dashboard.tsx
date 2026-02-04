@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent,  CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -16,6 +16,7 @@ import {
   UserPlus,
   TrendingUp,
   Database,
+  Activity,
 } from 'lucide-react'
 import {
   XAxis,
@@ -85,6 +86,7 @@ const AdminDashboard: React.FC = () => {
     { name: 'Admins', value: 5, color: '#10b981' }
   ]
 
+  // Fixed: performanceData is now used in the Overview tab
   const performanceData = [
     { name: 'Success Rate', value: 95 },
     { name: 'Avg Score', value: 78 },
@@ -197,7 +199,6 @@ const AdminDashboard: React.FC = () => {
           <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
-            <TabsTrigger value="simulations">Simulations</TabsTrigger>
             <TabsTrigger value="system">System</TabsTrigger>
           </TabsList>
 
@@ -248,6 +249,29 @@ const AdminDashboard: React.FC = () => {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Added: performanceData usage here to remove the warning */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Activity className="h-5 w-5 text-blue-500" />
+                  Key Performance Metrics
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 md:grid-cols-4">
+                  {performanceData.map((item) => (
+                    <div key={item.name} className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">{item.name}</span>
+                        <span className="font-bold">{item.value}%</span>
+                      </div>
+                      <Progress value={item.value} className="h-1" />
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="users">
@@ -283,7 +307,6 @@ const AdminDashboard: React.FC = () => {
                             </div>
                           </div>
                           <div className="flex items-center gap-4">
-                            {/* FIXED VARIANTS BELOW */}
                             <Badge variant={(user.role === 'ADMIN' ? 'destructive' : user.role === 'EMPLOYER' ? 'default' : 'secondary') as "default" | "destructive" | "secondary" | "outline"}>
                               {user.role}
                             </Badge>

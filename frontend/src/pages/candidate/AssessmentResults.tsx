@@ -13,7 +13,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
   RadarChart,
   PolarGrid,
@@ -30,14 +29,13 @@ import {
   MessageSquare,
   Download,
   Eye,
-  Star,
   Target,
   Users,
   Calendar
 } from 'lucide-react'
 import { candidateApi } from '@/lib/api'
 import Navbar from '@/components/Navbar'
-import { formatDate, formatDuration } from '@/lib/utils'
+import {  formatDuration } from '@/lib/utils'
 import EmptyState from '@/components/EmptyState'
 
 interface AssessmentResult {

@@ -23,11 +23,10 @@ import {
 } from '@/components/ui/table'
 import {
   Search,
-  Filter,
   Download,
   AlertTriangle,
   Info,
-  CheckCircle,
+  
   XCircle,
   Server,
   Database,
@@ -36,7 +35,6 @@ import {
 } from 'lucide-react'
 import { api } from '@/lib/api'
 import Navbar from '@/components/Navbar'
-import { formatDate } from '@/lib/utils'
 import EmptyState from '@/components/EmptyState'
 
 interface LogEntry {

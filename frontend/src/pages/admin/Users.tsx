@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent} from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
@@ -42,7 +42,7 @@ import {
   MoreVertical,
   Edit,
   Trash2,
-  Mail,
+  
   Calendar,
   Eye,
   CheckCircle,
@@ -55,6 +55,7 @@ import { formatDate } from '@/lib/utils'
 import { useToast } from '@/hooks/use-toast'
 import EmptyState from '@/components/EmptyState'
 
+// Interfaces
 interface User {
   id: string
   email: string
@@ -89,6 +90,7 @@ const AdminUsers: React.FC = () => {
   const queryClient = useQueryClient()
   const { toast } = useToast()
 
+  // Fetch Users Query
   const { data, isLoading } = useQuery({
     queryKey: ['admin-users', page, roleFilter, statusFilter, searchTerm],
     queryFn: async () => {
@@ -105,6 +107,7 @@ const AdminUsers: React.FC = () => {
     },
   })
 
+  // Delete Mutation
   const deleteMutation = useMutation({
     mutationFn: async (userId: string) => {
       await api.delete(`/admin/users/${userId}`)
@@ -114,7 +117,6 @@ const AdminUsers: React.FC = () => {
       toast({
         title: 'User deleted',
         description: 'User has been successfully deleted.',
-        variant: 'default',
       })
       setShowDeleteDialog(false)
     },
@@ -127,6 +129,7 @@ const AdminUsers: React.FC = () => {
     },
   })
 
+  // Toggle Verification Mutation
   const toggleVerificationMutation = useMutation({
     mutationFn: async ({ userId, verified }: { userId: string; verified: boolean }) => {
       await api.patch(`/admin/users/${userId}/verify`, { verified })
@@ -136,12 +139,11 @@ const AdminUsers: React.FC = () => {
       toast({
         title: 'Status updated',
         description: 'User verification status has been updated.',
-        variant: 'default',
       })
     },
   })
 
-  const handleDelete = (user: User) => {
+  const handleDeleteClick = (user: User) => {
     setSelectedUser(user)
     setShowDeleteDialog(true)
   }
@@ -153,6 +155,7 @@ const AdminUsers: React.FC = () => {
     })
   }
 
+  // UI Helpers
   const getRoleBadge = (role: string) => {
     switch (role) {
       case 'ADMIN':
@@ -185,33 +188,29 @@ const AdminUsers: React.FC = () => {
       <Navbar />
       
       <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">User Management</h1>
-              <p className="text-muted-foreground">
-                Manage all users and their permissions
-              </p>
-            </div>
-            <Button onClick={() => setShowAddUserDialog(true)}>
-              <UserPlus className="mr-2 h-4 w-4" />
-              Add User
-            </Button>
+        {/* Page Header */}
+        <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">User Management</h1>
+            <p className="text-muted-foreground">Manage all users and their permissions</p>
           </div>
+          <Button onClick={() => setShowAddUserDialog(true)}>
+            <UserPlus className="mr-2 h-4 w-4" />
+            Add User
+          </Button>
         </div>
 
-        {/* Filters */}
+        {/* Filter Section */}
         <Card className="mb-6">
           <CardContent className="p-6">
             <div className="grid gap-4 md:grid-cols-4">
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="search">Search Users</Label>
-                <div className="relative mt-1">
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
                     id="search"
-                    placeholder="Search by name or email..."
+                    placeholder="Name or email..."
                     className="pl-10"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -219,11 +218,11 @@ const AdminUsers: React.FC = () => {
                 </div>
               </div>
 
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="role">Role</Label>
                 <Select value={roleFilter} onValueChange={setRoleFilter}>
-                  <SelectTrigger className="mt-1">
-                    <SelectValue />
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Roles" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Roles</SelectItem>
@@ -234,11 +233,11 @@ const AdminUsers: React.FC = () => {
                 </Select>
               </div>
 
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="status">Status</Label>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="mt-1">
-                    <SelectValue />
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Status" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Status</SelectItem>
@@ -249,27 +248,27 @@ const AdminUsers: React.FC = () => {
               </div>
 
               <div className="flex items-end">
-                <Button className="w-full">
+                <Button variant="secondary" className="w-full">
                   <Filter className="mr-2 h-4 w-4" />
-                  Apply Filters
+                  Apply
                 </Button>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Users Table */}
+        {/* Main Users Table */}
         <Card>
           <CardContent className="p-0">
             {isLoading ? (
-              <div className="flex justify-center p-12">
+              <div className="flex h-64 items-center justify-center">
                 <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
               </div>
             ) : data?.users.length === 0 ? (
               <EmptyState
                 icon={Users}
                 title="No users found"
-                description="Try adjusting your search filters or add new users."
+                description="Try adjusting your filters or search terms."
                 actionLabel="Add User"
                 onAction={() => setShowAddUserDialog(true)}
               />
@@ -278,11 +277,11 @@ const AdminUsers: React.FC = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>User</TableHead>
+                      <TableHead>User Info</TableHead>
                       <TableHead>Role</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead>Created</TableHead>
-                      <TableHead>Activity</TableHead>
+                      <TableHead>Joined Date</TableHead>
+                      <TableHead>Stats</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -291,85 +290,53 @@ const AdminUsers: React.FC = () => {
                       <TableRow key={user.id}>
                         <TableCell>
                           <div className="flex items-center gap-3">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-                              <Users className="h-5 w-5" />
+                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+                              {user.firstName[0]}{user.lastName[0]}
                             </div>
                             <div>
-                              <p className="font-medium">
-                                {user.firstName} {user.lastName}
-                              </p>
-                              <p className="text-sm text-muted-foreground">{user.email}</p>
-                              {user.company && (
-                                <p className="text-xs text-muted-foreground">
-                                  {user.company}
-                                </p>
-                              )}
+                              <p className="font-medium">{user.firstName} {user.lastName}</p>
+                              <p className="text-xs text-muted-foreground">{user.email}</p>
+                              {user.company && <p className="text-[10px] text-blue-500 font-medium">{user.company}</p>}
                             </div>
                           </div>
                         </TableCell>
                         <TableCell>{getRoleBadge(user.role)}</TableCell>
                         <TableCell>{getStatusBadge(user.isVerified)}</TableCell>
                         <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm">
-                              {formatDate(user.createdAt)}
-                            </span>
+                          <div className="flex items-center gap-2 text-xs">
+                            <Calendar className="h-3 w-3 text-muted-foreground" />
+                            {formatDate(user.createdAt)}
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                              <Badge variant="outline" className="text-xs">
-                                {user._count.createdSimulations} sims
-                              </Badge>
-                              <Badge variant="outline" className="text-xs">
-                                {user._count.submissions} subs
-                              </Badge>
-                            </div>
+                          <div className="flex gap-1">
+                            <Badge variant="outline" className="text-[10px] px-1">
+                              {user._count.createdSimulations} Sims
+                            </Badge>
+                            <Badge variant="outline" className="text-[10px] px-1">
+                              {user._count.submissions} Subs
+                            </Badge>
                           </div>
                         </TableCell>
                         <TableCell className="text-right">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm">
+                              <Button variant="ghost" size="icon">
                                 <MoreVertical className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem>
-                                <Eye className="mr-2 h-4 w-4" />
-                                View Details
-                              </DropdownMenuItem>
-                              <DropdownMenuItem>
-                                <Edit className="mr-2 h-4 w-4" />
-                                Edit User
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => handleToggleVerification(user)}
-                              >
+                              <DropdownMenuItem><Eye className="mr-2 h-4 w-4" /> View Profile</DropdownMenuItem>
+                              <DropdownMenuItem><Edit className="mr-2 h-4 w-4" /> Edit</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleToggleVerification(user)}>
                                 {user.isVerified ? (
-                                  <>
-                                    <XCircle className="mr-2 h-4 w-4" />
-                                    Unverify
-                                  </>
+                                  <><XCircle className="mr-2 h-4 w-4" /> Unverify</>
                                 ) : (
-                                  <>
-                                    <CheckCircle className="mr-2 h-4 w-4" />
-                                    Verify
-                                  </>
+                                  <><CheckCircle className="mr-2 h-4 w-4" /> Verify</>
                                 )}
                               </DropdownMenuItem>
-                              <DropdownMenuItem>
-                                <Mail className="mr-2 h-4 w-4" />
-                                Send Email
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                className="text-red-600"
-                                onClick={() => handleDelete(user)}
-                              >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete
+                              <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteClick(user)}>
+                                <Trash2 className="mr-2 h-4 w-4" /> Delete
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -383,26 +350,26 @@ const AdminUsers: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Pagination */}
+        {/* Pagination Section */}
         {data && data.pagination.pages > 1 && (
           <div className="mt-6 flex items-center justify-between">
-            <div className="text-sm text-muted-foreground">
-              Showing page {data.pagination.page} of {data.pagination.pages}
-            </div>
+            <p className="text-sm text-muted-foreground">
+              Page {data.pagination.page} of {data.pagination.pages}
+            </p>
             <div className="flex gap-2">
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
+                onClick={() => setPage(p => p - 1)}
               >
                 Previous
               </Button>
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setPage(p => Math.min(data.pagination.pages, p + 1))}
                 disabled={page === data.pagination.pages}
+                onClick={() => setPage(p => p + 1)}
               >
                 Next
               </Button>
@@ -414,31 +381,22 @@ const AdminUsers: React.FC = () => {
         <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Delete User</DialogTitle>
+              <DialogTitle>Delete User Permanently?</DialogTitle>
               <DialogDescription>
-                Are you sure you want to delete {selectedUser?.firstName} {selectedUser?.lastName}?
-                This action cannot be undone.
+                Are you sure you want to delete <strong>{selectedUser?.firstName} {selectedUser?.lastName}</strong>?
+                This action will remove all their data and cannot be undone.
               </DialogDescription>
             </DialogHeader>
-            <div className="rounded-lg bg-destructive/10 p-4">
-              <p className="text-sm text-destructive">
-                ⚠️ Warning: Deleting this user will permanently remove their account
-                and all associated data including simulations and submissions.
-              </p>
-            </div>
             <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setShowDeleteDialog(false)}
-              >
+              <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
                 Cancel
               </Button>
               <Button
                 variant="destructive"
-                onClick={() => selectedUser && deleteMutation.mutate(selectedUser.id)}
                 disabled={deleteMutation.isPending}
+                onClick={() => selectedUser && deleteMutation.mutate(selectedUser.id)}
               >
-                {deleteMutation.isPending ? 'Deleting...' : 'Delete User'}
+                {deleteMutation.isPending ? 'Deleting...' : 'Confirm Delete'}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -448,4 +406,4 @@ const AdminUsers: React.FC = () => {
   )
 }
 
-export default AdminUsers
+export default AdminUsers;
