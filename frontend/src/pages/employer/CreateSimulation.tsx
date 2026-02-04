@@ -1,4 +1,4 @@
-import React from 'react';
+
 import SimulationBuilder from '@/components/employer/SimulationBuilder';
 import EmployerNavbar from '@/components/employer/EmployerNavbar';
 
