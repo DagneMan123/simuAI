@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useIntegrity } from '../../hooks/useIntegrity';
-import { aiService, Question, AnswerSubmission } from '../../services/aiService';
+import { aiService, Question, AnswerSubmission } from '../../lib/aiService';
 import {
   Box,
   Card,
@@ -19,7 +19,6 @@ import {
   DialogContent,
   DialogActions,
   IconButton,
-  Divider,
 } from '@mui/material';
 import {
   Timer,
@@ -30,22 +29,60 @@ import {
 } from '@mui/icons-material';
 
 const AssessmentRoom: React.FC = () => {
-  const { examType } = useParams();
+  const { examType } = useParams<{ examType: string }>();
   const navigate = useNavigate();
   
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [timeLeft, setTimeLeft] = useState<number>(3600); // 60 minutes in seconds
+  const [timeLeft, setTimeLeft] = useState<number>(3600); 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [showSubmitDialog, setShowSubmitDialog] = useState(false);
   const [sessionId, setSessionId] = useState<string>('');
   const [warningCount, setWarningCount] = useState(0);
 
-  // የኢንቲግሪቲ ማሻሻያን መጠቀም
-  const { warningCount: integrityWarning, isActive } = useIntegrity({
-    onWarning: (count) => {
+  const handleSubmit = useCallback(async () => {
+    setShowSubmitDialog(false);
+    setSubmitting(true);
+
+    try {
+      const answerSubmissions: AnswerSubmission[] = questions.map((q) => ({
+        questionId: q.id,
+        answer: answers[q.id] || '',
+        timeSpent: 0, 
+      }));
+
+      const result = await aiService.submitAnswers(sessionId, answerSubmissions);
+      navigate('/my-results', { state: { result } });
+    } catch (error) {
+      console.error('Failed to submit assessment:', error);
+      alert('Failed to submit assessment. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  }, [questions, answers, sessionId, navigate]);
+
+  const handleForceSubmit = useCallback(async () => {
+    setSubmitting(true);
+    try {
+      const answerSubmissions: AnswerSubmission[] = questions.map((q) => ({
+        questionId: q.id,
+        answer: answers[q.id] || '',
+        timeSpent: 0,
+      }));
+
+      await aiService.submitAnswers(sessionId, answerSubmissions);
+      navigate('/my-results', { 
+        state: { message: 'Assessment submitted due to integrity policy' }
+      });
+    } catch (error) {
+      console.error('Failed to force submit:', error);
+    }
+  }, [questions, answers, sessionId, navigate]);
+
+  const { isActive } = useIntegrity({
+    onWarning: (count: number) => {
       setWarningCount(count);
       if (count >= 3) {
         handleForceSubmit();
@@ -60,7 +97,7 @@ const AssessmentRoom: React.FC = () => {
       const session = await aiService.startAssessment(examType || 'general');
       setQuestions(session.questions);
       setSessionId(session.id);
-      setTimeLeft(session.timeLimit / 1000); // Convert to seconds
+      setTimeLeft(session.timeLimit / 1000); 
     } catch (error) {
       console.error('Failed to load assessment:', error);
       navigate('/dashboard');
@@ -84,7 +121,7 @@ const AssessmentRoom: React.FC = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timeLeft]);
+  }, [timeLeft, handleSubmit]);
 
   const handleAnswerChange = (questionId: string, answer: string) => {
     setAnswers((prev) => ({
@@ -106,49 +143,12 @@ const AssessmentRoom: React.FC = () => {
   };
 
   const handleFlagQuestion = () => {
-    // Mark question for review
     const updatedQuestions = [...questions];
-    updatedQuestions[currentQuestionIndex].flagged = true;
+    updatedQuestions[currentQuestionIndex] = {
+      ...updatedQuestions[currentQuestionIndex],
+      flagged: true
+    };
     setQuestions(updatedQuestions);
-  };
-
-  async function handleForceSubmit() {
-    setSubmitting(true);
-    try {
-      const answerSubmissions: AnswerSubmission[] = questions.map((q) => ({
-        questionId: q.id,
-        answer: answers[q.id] || '',
-        timeSpent: 0, // This would be tracked per question
-      }));
-
-      await aiService.submitAnswers(sessionId, answerSubmissions);
-      navigate('/my-results', { 
-        state: { message: 'Assessment submitted due to integrity policy' }
-      });
-    } catch (error) {
-      console.error('Failed to submit assessment:', error);
-    }
-  }
-
-  const handleSubmit = async () => {
-    setShowSubmitDialog(false);
-    setSubmitting(true);
-
-    try {
-      const answerSubmissions: AnswerSubmission[] = questions.map((q) => ({
-        questionId: q.id,
-        answer: answers[q.id] || '',
-        timeSpent: Math.floor(Math.random() * 300), // በተግባር ትክክለኛ ጊዜ ይለካል
-      }));
-
-      const result = await aiService.submitAnswers(sessionId, answerSubmissions);
-      navigate('/my-results', { state: { result } });
-    } catch (error) {
-      console.error('Failed to submit assessment:', error);
-      alert('Failed to submit assessment. Please try again.');
-    } finally {
-      setSubmitting(false);
-    }
   };
 
   const formatTime = (seconds: number) => {
@@ -170,7 +170,6 @@ const AssessmentRoom: React.FC = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-      {/* Header with Timer and Warnings */}
       <Card sx={{ mb: 3 }}>
         <CardContent>
           <Box display="flex" justifyContent="space-between" alignItems="center">
@@ -200,20 +199,18 @@ const AssessmentRoom: React.FC = () => {
           
           <LinearProgress 
             variant="determinate" 
-            value={((currentQuestionIndex + 1) / questions.length) * 100}
+            value={questions.length > 0 ? ((currentQuestionIndex + 1) / questions.length) * 100 : 0}
             sx={{ mt: 2 }}
           />
         </CardContent>
       </Card>
 
-      {/* Integrity Warning */}
       {!isActive && (
         <Alert severity="error" sx={{ mb: 2 }}>
           Warning: Tab switch detected! This is a violation of exam rules.
         </Alert>
       )}
 
-      {/* Question Navigation */}
       <Box display="flex" justifyContent="space-between" mb={2}>
         <Button
           variant="outlined"
@@ -253,68 +250,68 @@ const AssessmentRoom: React.FC = () => {
         </Button>
       </Box>
 
-      {/* Current Question */}
-      <Card sx={{ mb: 3 }}>
-        <CardContent>
-          <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={3}>
-            <Typography variant="h6">
-              {currentQuestion.text}
-            </Typography>
-            <IconButton onClick={handleFlagQuestion} color={currentQuestion.flagged ? "warning" : "default"}>
-              <Flag />
-            </IconButton>
-          </Box>
-          
-          {currentQuestion.type === 'multiple-choice' && currentQuestion.options && (
-            <RadioGroup
-              value={answers[currentQuestion.id] || ''}
-              onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
-            >
-              {currentQuestion.options.map((option, idx) => (
-                <FormControlLabel
-                  key={idx}
-                  value={option}
-                  control={<Radio />}
-                  label={option}
-                  sx={{ mb: 1, p: 1, borderRadius: 1, '&:hover': { bgcolor: 'action.hover' } }}
-                />
-              ))}
-            </RadioGroup>
-          )}
-          
-          {currentQuestion.type === 'essay' && (
-            <TextField
-              fullWidth
-              multiline
-              rows={6}
-              value={answers[currentQuestion.id] || ''}
-              onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
-              placeholder="Type your answer here..."
-              variant="outlined"
-            />
-          )}
-          
-          {currentQuestion.type === 'coding' && (
-            <Box>
-              <Typography variant="subtitle2" gutterBottom color="textSecondary">
-                Write your code solution:
+      {currentQuestion && (
+        <Card sx={{ mb: 3 }}>
+          <CardContent>
+            <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={3}>
+              <Typography variant="h6">
+                {currentQuestion.text}
               </Typography>
+              <IconButton onClick={handleFlagQuestion} color={currentQuestion.flagged ? "warning" : "default"}>
+                <Flag />
+              </IconButton>
+            </Box>
+            
+            {currentQuestion.type === 'multiple-choice' && currentQuestion.options && (
+              <RadioGroup
+                value={answers[currentQuestion.id] || ''}
+                onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
+              >
+                {currentQuestion.options.map((option, idx) => (
+                  <FormControlLabel
+                    key={idx}
+                    value={option}
+                    control={<Radio />}
+                    label={option}
+                    sx={{ mb: 1, p: 1, borderRadius: 1, '&:hover': { bgcolor: 'action.hover' } }}
+                  />
+                ))}
+              </RadioGroup>
+            )}
+            
+            {currentQuestion.type === 'essay' && (
               <TextField
                 fullWidth
                 multiline
-                rows={12}
+                rows={6}
                 value={answers[currentQuestion.id] || ''}
                 onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
-                placeholder={`function solution(input) {\n  // Your code here\n}`}
+                placeholder="Type your answer here..."
                 variant="outlined"
-                sx={{ fontFamily: 'monospace' }}
               />
-            </Box>
-          )}
-        </CardContent>
-      </Card>
+            )}
+            
+            {currentQuestion.type === 'coding' && (
+              <Box>
+                <Typography variant="subtitle2" gutterBottom color="textSecondary">
+                  Write your code solution:
+                </Typography>
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={12}
+                  value={answers[currentQuestion.id] || ''}
+                  onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
+                  placeholder={`function solution(input) {\n  // Your code here\n}`}
+                  variant="outlined"
+                  sx={{ fontFamily: 'monospace' }}
+                />
+              </Box>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Navigation Buttons */}
       <Box display="flex" justifyContent="space-between">
         <Button
           variant="outlined"
@@ -346,7 +343,6 @@ const AssessmentRoom: React.FC = () => {
         </Box>
       </Box>
 
-      {/* Submit Confirmation Dialog */}
       <Dialog open={showSubmitDialog} onClose={() => setShowSubmitDialog(false)}>
         <DialogTitle>Submit Assessment</DialogTitle>
         <DialogContent>
