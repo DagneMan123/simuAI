@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
+import  {
   Box,
   Container,
   Typography,
@@ -14,7 +14,7 @@ import {
   ListItemIcon,
   ListItemText,
   Divider,
-} from '@mui/material';
+} from '@mui/material'; 
 import {
   School,
   Assessment,
