@@ -41,13 +41,10 @@ import {
   DollarSign,
   Download,
   Filter,
-  Calendar,
   BarChart3,
   PieChart as PieChartIcon,
   RadarIcon,
   LineChart as LineChartIcon,
-  Eye,
-  Share2,
   RefreshCw
 } from 'lucide-react'
 import { simulationApi } from '@/lib/api'
@@ -77,12 +74,23 @@ interface SkillGap {
   priority: 'high' | 'medium' | 'low'
 }
 
+interface PieChartData {
+  name: string
+  value: number
+}
+
 const TalentAnalytics: React.FC = () => {
   const [timeRange, setTimeRange] = useState('30d')
   const [activeChart, setActiveChart] = useState('bar')
   const [simulationFilter, setSimulationFilter] = useState('all')
 
-  // Mock data - Replace with actual API calls
+  const { refetch, isFetching } = useQuery({
+    queryKey: ['analyticsData', timeRange, simulationFilter],
+    queryFn: () => simulationApi.getSimulations(),
+    enabled: false,
+  })
+
+  // Mock data
   const performanceData: AnalyticsData[] = [
     { date: 'Jan', candidates: 12, avgScore: 72, completionRate: 85, shortlisted: 4 },
     { date: 'Feb', candidates: 18, avgScore: 75, completionRate: 82, shortlisted: 6 },
@@ -107,8 +115,16 @@ const TalentAnalytics: React.FC = () => {
     { skill: 'Leadership', currentLevel: 70, requiredLevel: 75, gap: 5, priority: 'low' },
   ]
 
+  const pieChartData: PieChartData[] = [
+    { name: 'Senior Dev', value: 92 },
+    { name: 'Frontend', value: 88 },
+    { name: 'Backend', value: 85 },
+    { name: 'DevOps', value: 78 },
+    { name: 'Full Stack', value: 90 },
+  ]
+
   const hiringMetrics = {
-    timeToHire: 24, // days
+    timeToHire: 24,
     costPerHire: 8500,
     qualityOfHire: 8.5,
     offerAcceptanceRate: 85,
@@ -127,17 +143,30 @@ const TalentAnalytics: React.FC = () => {
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
 
   const exportReport = () => {
-    // Implement export functionality
     console.log('Exporting analytics report...')
   }
 
   const refreshData = () => {
-    // Implement data refresh
+    refetch()
     console.log('Refreshing analytics data...')
   }
 
+  // Custom renderLabel function with proper typing
+  const renderLabel = (entry: any) => {
+    const percent = entry.percent || 0;
+    const name = entry.name || '';
+    return `${name}: ${(percent * 100).toFixed(0)}%`;
+  };
+
+  // Custom renderLabel function for PieChart
+  const renderPieLabel = (entry: any) => {
+    const percent = entry.percent || 0;
+    const name = entry.name || '';
+    return `${name}: ${(percent * 100).toFixed(0)}%`;
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className={cn("min-h-screen bg-gray-50 dark:bg-gray-900")}>
       <Navbar />
       
       <div className="container mx-auto px-4 py-8">
@@ -152,7 +181,7 @@ const TalentAnalytics: React.FC = () => {
             </div>
             <div className="flex gap-2">
               <Button variant="outline" onClick={refreshData}>
-                <RefreshCw className="mr-2 h-4 w-4" />
+                <RefreshCw className={cn("mr-2 h-4 w-4", isFetching && "animate-spin")} />
                 Refresh
               </Button>
               <Button onClick={exportReport}>
@@ -402,6 +431,24 @@ const TalentAnalytics: React.FC = () => {
                           <Line type="monotone" dataKey="avgScore" stroke="#10b981" />
                           <Line type="monotone" dataKey="completionRate" stroke="#8b5cf6" />
                         </LineChart>
+                      ) : activeChart === 'pie' ? (
+                        <PieChart>
+                          <Pie
+                            data={pieChartData}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            label={renderLabel}
+                            outerRadius={80}
+                            fill="#8884d8"
+                            dataKey="value"
+                          >
+                            {pieChartData.map((_, index) => (
+                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                        </PieChart>
                       ) : (
                         <RadarChart data={performanceData.slice(0, 4)}>
                           <PolarGrid />
@@ -428,22 +475,16 @@ const TalentAnalytics: React.FC = () => {
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
-                          data={[
-                            { name: 'Senior Dev', value: 92 },
-                            { name: 'Frontend', value: 88 },
-                            { name: 'Backend', value: 85 },
-                            { name: 'DevOps', value: 78 },
-                            { name: 'Full Stack', value: 90 },
-                          ]}
+                          data={pieChartData}
                           cx="50%"
                           cy="50%"
                           labelLine={false}
-                          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                          label={renderPieLabel}
                           outerRadius={80}
                           fill="#8884d8"
                           dataKey="value"
                         >
-                          {performanceData.map((_, index) => (
+                          {pieChartData.map((_, index) => (
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                           ))}
                         </Pie>

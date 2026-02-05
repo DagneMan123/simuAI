@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import {
   Table,
@@ -18,18 +17,15 @@ import {
 } from "@/components/ui/table"
 import {
   BarChart3,
-  Filter,
   Download,
   Eye,
   MessageSquare,
   Star,
-  Clock,
   CheckCircle,
   XCircle,
   User,
   Calendar,
   Search,
-  ArrowUpDown
 } from 'lucide-react'
 import { simulationApi } from '@/lib/api'
 import Navbar from '@/components/Navbar'
