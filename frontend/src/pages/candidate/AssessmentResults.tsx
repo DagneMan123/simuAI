@@ -73,7 +73,7 @@ const AssessmentResults: React.FC = () => {
     queryKey: ['assessment-results', id],
     queryFn: async () => {
       if (id) {
-        const response = await candidateApi.getSimulationResults(id)
+        const response = await candidateApi.getResults(id)
         return response.data as AssessmentResult
       }
       // Mock data for demonstration
