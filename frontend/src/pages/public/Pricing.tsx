@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { payService } from '../../lib/payService';
 import {
   Box,
   Container,
   Typography,
-  Grid,
   Card,
   CardContent,
   CardActions,
@@ -20,6 +18,7 @@ import {
   Alert,
   Divider,
 } from '@mui/material';
+import Grid from '@mui/material/Grid'; // አዲሱ Grid2 ስህተቶችን ያስቀራል
 import {
   CheckCircle,
   Cancel,
@@ -30,12 +29,35 @@ import {
   Security,
 } from '@mui/icons-material';
 
+// 1. የዳታ አይነቶችን (Types) በትክክል መወሰን (TypeScript ስህተት እንዳይኖር)
+interface PlanFeature {
+  included: boolean;
+  text: string;
+}
+
+interface PricingPlan {
+  name: string;
+  price: { monthly: number; yearly: number };
+  description: string;
+  features: PlanFeature[];
+  color: "inherit" | "primary" | "secondary" | "success" | "error" | "info" | "warning";
+  popular?: boolean;
+}
+
+// Mock payService - ይህን ከራስህ ፋይል ጋር ማገናኘት ትችላለህ
+const payService = {
+  initiatePayment: async (data: any) => {
+    console.log("Payment Data:", data);
+    return { checkoutUrl: "https://chapa.co/checkout-example" };
+  }
+};
+
 const Pricing: React.FC = () => {
   const navigate = useNavigate();
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const [processing, setProcessing] = useState(false);
 
-  const plans = [
+  const plans: PricingPlan[] = [
     {
       name: 'Free',
       price: { monthly: 0, yearly: 0 },
@@ -48,7 +70,7 @@ const Pricing: React.FC = () => {
         { included: false, text: 'Priority support' },
         { included: false, text: 'Certification' },
       ],
-      color: 'default' as const,
+      color: 'inherit',
     },
     {
       name: 'Pro',
@@ -62,7 +84,7 @@ const Pricing: React.FC = () => {
         { included: true, text: 'Skill certification' },
         { included: false, text: 'Team features' },
       ],
-      color: 'primary' as const,
+      color: 'primary',
       popular: true,
     },
     {
@@ -77,11 +99,11 @@ const Pricing: React.FC = () => {
         { included: true, text: 'Dedicated support' },
         { included: true, text: 'White labeling' },
       ],
-      color: 'secondary' as const,
+      color: 'secondary',
     },
   ];
 
-  const handleSubscribe = async (plan: typeof plans[0]) => {
+  const handleSubscribe = async (plan: PricingPlan) => {
     if (plan.name === 'Free') {
       navigate('/register');
       return;
@@ -91,9 +113,9 @@ const Pricing: React.FC = () => {
     try {
       const paymentData = {
         amount: plan.price[billingCycle],
-        email: 'user@example.com', // In practice, this comes from the user
-        firstName: 'Test',
-        lastName: 'User',
+        email: 'user@example.com',
+        firstName: 'Dagne',
+        lastName: 'Software',
         returnUrl: `${window.location.origin}/payment-success`,
       };
 
@@ -107,7 +129,7 @@ const Pricing: React.FC = () => {
     }
   };
 
-  const calculateSavings = (plan: typeof plans[0]) => {
+  const calculateSavings = (plan: PricingPlan) => {
     if (plan.price.yearly === 0) return 0;
     const monthlyTotal = plan.price.monthly * 12;
     return Math.round(((monthlyTotal - plan.price.yearly) / monthlyTotal) * 100);
@@ -115,7 +137,7 @@ const Pricing: React.FC = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 8 }}>
-      <Typography variant="h2" align="center" gutterBottom>
+      <Typography variant="h2" align="center" gutterBottom sx={{ fontWeight: 800 }}>
         Choose Your Plan
       </Typography>
       
@@ -123,10 +145,11 @@ const Pricing: React.FC = () => {
         Select the perfect plan for your learning journey
       </Typography>
 
-      {/* Billing Toggle */}
+      {/* Billing Cycle Toggle Functionality */}
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 6 }}>
-        <Typography>Monthly</Typography>
+        <Typography sx={{ fontWeight: billingCycle === 'monthly' ? 'bold' : 'normal' }}>Monthly</Typography>
         <FormControlLabel
+          sx={{ mx: 1 }}
           control={
             <Switch
               checked={billingCycle === 'yearly'}
@@ -137,32 +160,33 @@ const Pricing: React.FC = () => {
           label=""
         />
         <Box>
-          <Typography>Yearly</Typography>
-          <Typography variant="caption" color="success.main">
+          <Typography sx={{ fontWeight: billingCycle === 'yearly' ? 'bold' : 'normal' }}>Yearly</Typography>
+          <Typography variant="caption" color="success.main" sx={{ fontWeight: 'bold' }}>
             Save up to 20%
           </Typography>
         </Box>
       </Box>
 
-      {/* Plans */}
-      <Grid container spacing={4}>
+      {/* Pricing Cards using Grid2 */}
+      <Grid container spacing={4} alignItems="stretch">
         {plans.map((plan) => (
-          <Grid item xs={12} md={4} key={plan.name}>
+          <Grid size={{ xs: 12, md: 4 }} key={plan.name}>
             <Card
               sx={{
                 height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
                 position: 'relative',
                 border: plan.popular ? '2px solid' : '1px solid',
                 borderColor: plan.popular ? 'primary.main' : 'divider',
-                transform: plan.popular ? 'scale(1.05)' : 'none',
-                zIndex: plan.popular ? 1 : 0,
+                boxShadow: plan.popular ? 10 : 1,
               }}
             >
               {plan.popular && (
                 <Box
                   sx={{
                     position: 'absolute',
-                    top: -10,
+                    top: -12,
                     left: '50%',
                     transform: 'translateX(-50%)',
                     bgcolor: 'primary.main',
@@ -170,53 +194,56 @@ const Pricing: React.FC = () => {
                     px: 2,
                     py: 0.5,
                     borderRadius: 1,
-                    fontSize: '0.875rem',
+                    fontSize: '0.75rem',
+                    fontWeight: 'bold',
+                    zIndex: 2,
                   }}
                 >
-                  <Star sx={{ fontSize: 16, verticalAlign: 'middle', mr: 0.5 }} />
+                  <Star sx={{ fontSize: 14, verticalAlign: 'middle', mr: 0.5 }} />
                   MOST POPULAR
                 </Box>
               )}
 
-              <CardContent>
-                <Typography variant="h5" gutterBottom>
+              <CardContent sx={{ flexGrow: 1 }}>
+                <Typography variant="h5" component="div" gutterBottom sx={{ fontWeight: 'bold' }}>
                   {plan.name}
                 </Typography>
                 
                 <Box sx={{ display: 'flex', alignItems: 'baseline', mb: 2 }}>
-                  <Typography variant="h3">
+                  <Typography variant="h3" sx={{ fontWeight: 'bold' }}>
                     ${plan.price[billingCycle]}
                   </Typography>
-                  <Typography variant="h6" color="textSecondary">
-                    /{billingCycle === 'monthly' ? 'month' : 'year'}
+                  <Typography variant="h6" color="textSecondary" sx={{ ml: 1 }}>
+                    /{billingCycle === 'monthly' ? 'mo' : 'yr'}
                   </Typography>
                 </Box>
 
                 {billingCycle === 'yearly' && plan.price.yearly > 0 && (
-                  <Alert severity="success" sx={{ mb: 2 }}>
-                    Save {calculateSavings(plan)}% compared to monthly
+                  <Alert severity="success" icon={false} sx={{ mb: 2, py: 0, fontWeight: 'bold' }}>
+                    Save {calculateSavings(plan)}%
                   </Alert>
                 )}
 
-                <Typography color="textSecondary" paragraph>
+                <Typography color="textSecondary" variant="body2" sx={{ mb: 2 }}>
                   {plan.description}
                 </Typography>
 
                 <Divider sx={{ my: 2 }} />
 
-                <List>
+                <List dense>
                   {plan.features.map((feature, index) => (
-                    <ListItem key={index} sx={{ px: 0 }}>
-                      <ListItemIcon sx={{ minWidth: 36 }}>
+                    <ListItem key={index} disableGutters>
+                      <ListItemIcon sx={{ minWidth: 32 }}>
                         {feature.included ? (
-                          <CheckCircle color="success" />
+                          <CheckCircle fontSize="small" color="success" />
                         ) : (
-                          <Cancel color="error" />
+                          <Cancel fontSize="small" color="disabled" />
                         )}
                       </ListItemIcon>
                       <ListItemText
                         primary={feature.text}
                         primaryTypographyProps={{
+                          variant: 'body2',
                           color: feature.included ? 'textPrimary' : 'textDisabled',
                         }}
                       />
@@ -225,7 +252,7 @@ const Pricing: React.FC = () => {
                 </List>
               </CardContent>
 
-              <CardActions sx={{ p: 2, pt: 0 }}>
+              <CardActions sx={{ p: 2 }}>
                 <Button
                   fullWidth
                   variant={plan.popular ? 'contained' : 'outlined'}
@@ -233,6 +260,7 @@ const Pricing: React.FC = () => {
                   size="large"
                   onClick={() => handleSubscribe(plan)}
                   disabled={processing}
+                  sx={{ py: 1.5, fontWeight: 'bold' }}
                 >
                   {plan.name === 'Free' ? 'Get Started' : 'Subscribe Now'}
                 </Button>
@@ -242,109 +270,57 @@ const Pricing: React.FC = () => {
         ))}
       </Grid>
 
-      {/* Features Comparison */}
-      <Paper sx={{ mt: 8, p: 4 }}>
-        <Typography variant="h4" align="center" gutterBottom>
+      {/* Feature Highlights Section */}
+      <Paper sx={{ mt: 8, p: 4, borderRadius: 2 }}>
+        <Typography variant="h4" align="center" gutterBottom sx={{ fontWeight: 'bold' }}>
           Platform Features
         </Typography>
-        
         <Grid container spacing={4} sx={{ mt: 2 }}>
-          <Grid item xs={12} sm={4}>
-            <Box sx={{ textAlign: 'center', p: 2 }}>
-              <School sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
-              <Typography variant="h6" gutterBottom>
-                AI-Powered Learning
-              </Typography>
-              <Typography color="textSecondary">
-                Personalized assessments and feedback powered by advanced AI
-              </Typography>
-            </Box>
-          </Grid>
-          
-          <Grid item xs={12} sm={4}>
-            <Box sx={{ textAlign: 'center', p: 2 }}>
-              <TrendingUp sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
-              <Typography variant="h6" gutterBottom>
-                Progress Tracking
-              </Typography>
-              <Typography color="textSecondary">
-                Detailed analytics and progress reports
-              </Typography>
-            </Box>
-          </Grid>
-          
-          <Grid item xs={12} sm={4}>
-            <Box sx={{ textAlign: 'center', p: 2 }}>
-              <Security sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
-              <Typography variant="h6" gutterBottom>
-                Exam Integrity
-              </Typography>
-              <Typography color="textSecondary">
-                Advanced proctoring and security features
-              </Typography>
-            </Box>
-          </Grid>
+          {[
+            { icon: <School />, title: 'AI Learning', desc: 'Personalized feedback powered by AI.' },
+            { icon: <TrendingUp />, title: 'Progress', desc: 'Detailed analytics and reports.' },
+            { icon: <Security />, title: 'Security', desc: 'Secure proctoring and integrity.' }
+          ].map((feat, i) => (
+            <Grid size={{ xs: 12, md: 4 }} key={i} sx={{ textAlign: 'center' }}>
+              <Box sx={{ color: 'primary.main', mb: 1, '& svg': { fontSize: 40 } }}>
+                {feat.icon}
+              </Box>
+              <Typography variant="h6" sx={{ fontWeight: 'bold' }}>{feat.title}</Typography>
+              <Typography color="textSecondary" variant="body2">{feat.desc}</Typography>
+            </Grid>
+          ))}
         </Grid>
       </Paper>
 
-      {/* FAQ */}
+      {/* FAQ Section */}
       <Box sx={{ mt: 8 }}>
-        <Typography variant="h4" align="center" gutterBottom>
+        <Typography variant="h4" align="center" gutterBottom sx={{ fontWeight: 'bold' }}>
           Frequently Asked Questions
         </Typography>
-        
         <Grid container spacing={3} sx={{ mt: 2 }}>
-          <Grid item xs={12} sm={6}>
-            <Typography variant="h6" gutterBottom>
-              Can I cancel my subscription?
-            </Typography>
-            <Typography color="textSecondary">
-              Yes, you can cancel your subscription at any time. Your access will continue until the end of your billing period.
-            </Typography>
-          </Grid>
-          
-          <Grid item xs={12} sm={6}>
-            <Typography variant="h6" gutterBottom>
-              Is there a free trial?
-            </Typography>
-            <Typography color="textSecondary">
-              Yes, all paid plans come with a 14-day free trial. No credit card required for the trial.
-            </Typography>
-          </Grid>
-          
-          <Grid item xs={12} sm={6}>
-            <Typography variant="h6" gutterBottom>
-              What payment methods do you accept?
-            </Typography>
-            <Typography color="textSecondary">
-              We accept credit/debit cards, mobile money, and bank transfers through our secure payment gateway.
-            </Typography>
-          </Grid>
-          
-          <Grid item xs={12} sm={6}>
-            <Typography variant="h6" gutterBottom>
-              Can I switch plans?
-            </Typography>
-            <Typography color="textSecondary">
-              Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately.
-            </Typography>
-          </Grid>
+          {[
+            { q: "Can I cancel my subscription?", a: "Yes, you can cancel at any time. Your access will continue until the end of the period." },
+            { q: "Is there a free trial?", a: "Yes, all paid plans come with a 14-day free trial. No credit card required." }
+          ].map((faq, i) => (
+            <Grid size={{ xs: 12, md: 6 }} key={i}>
+              <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>{faq.q}</Typography>
+              <Typography color="textSecondary" variant="body2">{faq.a}</Typography>
+            </Grid>
+          ))}
         </Grid>
       </Box>
 
-      {/* CTA */}
+      {/* CTA Footer */}
       <Box sx={{ textAlign: 'center', mt: 8 }}>
-        <Typography variant="h5" gutterBottom>
+        <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
           Still have questions?
-        </Typography>
-        <Typography color="textSecondary" paragraph>
-          Contact our sales team for personalized assistance
         </Typography>
         <Button
           variant="contained"
           size="large"
           startIcon={<Support />}
           onClick={() => navigate('/contact')}
+          sx={{ px: 4, py: 1.5 }}
         >
           Contact Sales
         </Button>
