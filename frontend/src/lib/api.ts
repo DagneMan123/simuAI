@@ -139,7 +139,7 @@ export const employerApi = {
   sendFeedback: (subId: string, feedback: string) => 
     api.post(`/employer/submissions/${subId}/feedback`, { feedback }),
   
-  // Invitation management - ADDED MISSING METHODS
+  // Invitation management
   inviteCandidates: (simId: string, emails: string[]) => 
     api.post(`/employer/simulations/${simId}/invite`, { emails }),
   getInvitations: (simulationId: string) => 
@@ -156,31 +156,31 @@ export const employerApi = {
   }),
 };
 
-// FIXED: simulationApi with all needed methods
+/** 
+ * --- FIXED simulationApi --- 
+ * This object maps employer methods to simulationApi to fix component errors.
+ */
 export const simulationApi = {
-  // Simulation methods
+  // TalentAnalytics uses getSimulations()
+  getSimulations: () => employerApi.getSimulations(),
+  
+  // Dashboard & Builder uses these:
   get: (id: string) => employerApi.getSimulationDetails(id),
   create: (data: any) => employerApi.createSimulation(data),
   update: (id: string, data: any) => employerApi.updateSimulation(id, data),
   delete: (id: string) => employerApi.deleteSimulation(id),
+  
+  // Submissions & Invitations
   getSubmissions: (simId: string) => employerApi.getSubmissions(simId),
   getSubmissionDetails: (subId: string) => employerApi.getSubmissionDetails(subId),
-  updateSubmissionStatus: (subId: string, status: 'shortlisted' | 'rejected' | 'reviewed') => 
-    employerApi.updateSubmissionStatus(subId, status),
-  sendFeedback: (subId: string, feedback: string) => 
-    employerApi.sendFeedback(subId, feedback),
-  getEmployerStats: () => employerApi.getEmployerStats(),
-  exportResults: (simId: string) => employerApi.exportResults(simId),
+  getInvitations: (simId: string) => employerApi.getInvitations(simId),
+  inviteCandidates: (simId: string, emails: string[]) => employerApi.inviteCandidates(simId, emails),
+  resendInvitation: (invId: string) => employerApi.resendInvitation(invId),
+  deleteInvitation: (invId: string) => employerApi.deleteInvitation(invId),
   
-  // Invitation methods - ADDED MISSING METHODS
-  inviteCandidates: (simId: string, emails: string[]) => 
-    employerApi.inviteCandidates(simId, emails),
-  getInvitations: (simulationId: string) => 
-    employerApi.getInvitations(simulationId),
-  resendInvitation: (invitationId: string) => 
-    employerApi.resendInvitation(invitationId),
-  deleteInvitation: (invitationId: string) => 
-    employerApi.deleteInvitation(invitationId),
+  // Stats
+  getStats: () => employerApi.getEmployerStats(),
+  exportResults: (simId: string) => employerApi.exportResults(simId),
 };
 
 /** 
@@ -247,7 +247,6 @@ export const apiHelpers = {
   getToken: () => localStorage.getItem('accessToken'),
   clearSession: () => localStorage.clear(),
   
-  // Additional helpers
   isAuthenticated: (): boolean => {
     return !!localStorage.getItem('accessToken');
   },
@@ -257,7 +256,6 @@ export const apiHelpers = {
     if (!token) return null;
     
     try {
-      // Decode JWT token to get role
       const payload = JSON.parse(atob(token.split('.')[1]));
       return payload.role;
     } catch {
