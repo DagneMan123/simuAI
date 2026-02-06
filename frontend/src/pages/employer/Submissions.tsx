@@ -102,10 +102,14 @@ const Submissions: React.FC = () => {
     }
   })
 
+  // Fixed stats calculation
+  const scoredSubmissions = submissions?.filter(s => s.score !== null) || []
   const stats = {
     total: submissions?.length || 0,
-    withScore: submissions?.filter(s => s.score !== null).length || 0,
-    avgScore: submissions?.filter(s => s.score !== null).reduce((acc, s) => acc + (s.score || 0), 0) / (submissions?.filter(s => s.score !== null).length || 1),
+    withScore: scoredSubmissions.length,
+    avgScore: scoredSubmissions.length > 0
+      ? scoredSubmissions.reduce((acc, s) => acc + (s.score || 0), 0) / scoredSubmissions.length
+      : 0,
     withIntegrityFlags: submissions?.filter(s => s.integrityFlags.length > 0).length || 0
   }
 
@@ -292,9 +296,11 @@ const Submissions: React.FC = () => {
                 <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
                   <BarChart3 className="h-6 w-6" />
                 </div>
-                <h3 className="mb-2 text-lg font-semibold">No submissions yet</h3>
+                <h3 className="mb-2 text-lg font-semibold">No submissions found</h3>
                 <p className="mb-4 text-muted-foreground">
-                  Candidates haven't submitted their work yet.
+                  {filteredSubmissions?.length === 0 && submissions && submissions.length > 0
+                    ? "No submissions match your filters."
+                    : "Candidates haven't submitted their work yet."}
                 </p>
               </div>
             ) : (

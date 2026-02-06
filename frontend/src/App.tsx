@@ -48,8 +48,8 @@ const App: React.FC = () => {
               <SocketProvider>
                 <Routes>
                   {/* Public Routes */}
-                  <Route path="/" element={<LandingPage />} />
-                  <Route path="/login" element={<Login />} />
+                  <Route path="/" element={<Login />} />
+                  <Route path="/login" element={<LandingPage />} />
                   <Route path="/register" element={<Register />} />
                   <Route path="/demo" element={<div>Demo Page</div>} />
                   <Route path="/features" element={<div>Features Page</div>} />

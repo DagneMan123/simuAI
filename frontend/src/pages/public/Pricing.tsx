@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { payService } from '../../services/payService';
+import { payService } from '../../lib/payService';
 import {
   Box,
   Container,
@@ -24,7 +24,6 @@ import {
   CheckCircle,
   Cancel,
   Star,
-  EmojiEvents,
   Support,
   School,
   TrendingUp,
@@ -92,7 +91,7 @@ const Pricing: React.FC = () => {
     try {
       const paymentData = {
         amount: plan.price[billingCycle],
-        email: 'user@example.com', // በተግባር ከተጠቃሚው ይመጣል
+        email: 'user@example.com', // In practice, this comes from the user
         firstName: 'Test',
         lastName: 'User',
         returnUrl: `${window.location.origin}/payment-success`,
@@ -250,7 +249,7 @@ const Pricing: React.FC = () => {
         </Typography>
         
         <Grid container spacing={4} sx={{ mt: 2 }}>
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} sm={4}>
             <Box sx={{ textAlign: 'center', p: 2 }}>
               <School sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
               <Typography variant="h6" gutterBottom>
@@ -262,7 +261,7 @@ const Pricing: React.FC = () => {
             </Box>
           </Grid>
           
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} sm={4}>
             <Box sx={{ textAlign: 'center', p: 2 }}>
               <TrendingUp sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
               <Typography variant="h6" gutterBottom>
@@ -274,7 +273,7 @@ const Pricing: React.FC = () => {
             </Box>
           </Grid>
           
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} sm={4}>
             <Box sx={{ textAlign: 'center', p: 2 }}>
               <Security sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
               <Typography variant="h6" gutterBottom>
@@ -295,7 +294,7 @@ const Pricing: React.FC = () => {
         </Typography>
         
         <Grid container spacing={3} sx={{ mt: 2 }}>
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} sm={6}>
             <Typography variant="h6" gutterBottom>
               Can I cancel my subscription?
             </Typography>
@@ -304,7 +303,7 @@ const Pricing: React.FC = () => {
             </Typography>
           </Grid>
           
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} sm={6}>
             <Typography variant="h6" gutterBottom>
               Is there a free trial?
             </Typography>
@@ -313,7 +312,7 @@ const Pricing: React.FC = () => {
             </Typography>
           </Grid>
           
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} sm={6}>
             <Typography variant="h6" gutterBottom>
               What payment methods do you accept?
             </Typography>
@@ -322,7 +321,7 @@ const Pricing: React.FC = () => {
             </Typography>
           </Grid>
           
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} sm={6}>
             <Typography variant="h6" gutterBottom>
               Can I switch plans?
             </Typography>

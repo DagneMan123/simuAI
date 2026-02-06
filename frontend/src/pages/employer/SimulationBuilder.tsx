@@ -10,7 +10,7 @@ import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Plus, Trash2, Save, Eye, Copy, Clock, Settings, AlertTriangle } from 'lucide-react'
+import { Plus, Trash2,  Eye,  Clock, AlertTriangle } from 'lucide-react'
 import { simulationApi } from '@/lib/api'
 import { useToast } from '@/hooks/use-toast'
 import Navbar from '@/components/Navbar'
@@ -187,7 +187,8 @@ const SimulationBuilder: React.FC = () => {
         },
       }
       
-      const response = await simulationApi.create(data)
+      // FIXED: Added type assertion to tell TypeScript the response structure
+      const response = await simulationApi.create(data) as { data: { id: string } }
       
       toast({
         title: publish ? "Simulation Published!" : "Simulation Saved",

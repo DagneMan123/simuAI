@@ -124,50 +124,72 @@ export const candidateApi = {
  * --- 3. Employer (Recruiter) API --- 
  */
 export const employerApi = {
+  // Simulation management
   getSimulations: () => api.get('/employer/simulations'),
-  
   getSimulationDetails: (id: string) => api.get(`/employer/simulations/${id}`),
-  
   createSimulation: (data: any) => api.post('/employer/simulations', data),
-  
   updateSimulation: (id: string, data: any) => api.put(`/employer/simulations/${id}`, data),
-  
   deleteSimulation: (id: string) => api.delete(`/employer/simulations/${id}`),
   
+  // Submission management
   getSubmissions: (simId: string) => api.get(`/employer/simulations/${simId}/submissions`),
-  
   getSubmissionDetails: (subId: string) => api.get(`/employer/submissions/${subId}`),
-  
   updateSubmissionStatus: (subId: string, status: 'shortlisted' | 'rejected' | 'reviewed') => 
     api.patch(`/employer/submissions/${subId}/status`, { status }),
-    
   sendFeedback: (subId: string, feedback: string) => 
     api.post(`/employer/submissions/${subId}/feedback`, { feedback }),
-    
+  
+  // Invitation management - ADDED MISSING METHODS
   inviteCandidates: (simId: string, emails: string[]) => 
     api.post(`/employer/simulations/${simId}/invite`, { emails }),
-    
-  getEmployerStats: () => api.get('/employer/stats'),
+  getInvitations: (simulationId: string) => 
+    api.get(`/employer/simulations/${simulationId}/invitations`),
+  resendInvitation: (invitationId: string) => 
+    api.post(`/employer/invitations/${invitationId}/resend`),
+  deleteInvitation: (invitationId: string) => 
+    api.delete(`/employer/invitations/${invitationId}`),
   
+  // Stats and exports
+  getEmployerStats: () => api.get('/employer/stats'),
   exportResults: (simId: string) => api.get(`/employer/simulations/${simId}/export`, { 
     responseType: 'blob' 
   }),
 };
 
-// Map simulationApi to employerApi for compatibility
-export const simulationApi = employerApi;
+// FIXED: simulationApi with all needed methods
+export const simulationApi = {
+  // Simulation methods
+  get: (id: string) => employerApi.getSimulationDetails(id),
+  create: (data: any) => employerApi.createSimulation(data),
+  update: (id: string, data: any) => employerApi.updateSimulation(id, data),
+  delete: (id: string) => employerApi.deleteSimulation(id),
+  getSubmissions: (simId: string) => employerApi.getSubmissions(simId),
+  getSubmissionDetails: (subId: string) => employerApi.getSubmissionDetails(subId),
+  updateSubmissionStatus: (subId: string, status: 'shortlisted' | 'rejected' | 'reviewed') => 
+    employerApi.updateSubmissionStatus(subId, status),
+  sendFeedback: (subId: string, feedback: string) => 
+    employerApi.sendFeedback(subId, feedback),
+  getEmployerStats: () => employerApi.getEmployerStats(),
+  exportResults: (simId: string) => employerApi.exportResults(simId),
+  
+  // Invitation methods - ADDED MISSING METHODS
+  inviteCandidates: (simId: string, emails: string[]) => 
+    employerApi.inviteCandidates(simId, emails),
+  getInvitations: (simulationId: string) => 
+    employerApi.getInvitations(simulationId),
+  resendInvitation: (invitationId: string) => 
+    employerApi.resendInvitation(invitationId),
+  deleteInvitation: (invitationId: string) => 
+    employerApi.deleteInvitation(invitationId),
+};
 
 /** 
  * --- 4. Payment API (Chapa Integration) --- 
  */
 export const paymentApi = {
-  // Initiate payment and get Chapa checkout URL
   initiatePayment: (data: { amount: number; currency: string; simulationId?: string }) => 
     api.post('/payments/initialize', data),
-    
-  // Verify transaction after callback
   verifyPayment: (tx_ref: string) => api.get(`/payments/verify/${tx_ref}`),
-  
   getPaymentHistory: () => api.get('/payments/history'),
 };
 
@@ -175,15 +197,11 @@ export const paymentApi = {
  * --- 5. AI Engine API --- 
  */
 export const aiApi = {
-  // AI evaluation used in CandidateEvaluation page
   evaluate: (data: { submission: any; rubric: any; expectedOutput?: any }) => 
     api.post('/ai/evaluate', data),
-    
   getCareerAdvice: (profileData: any) => api.post('/ai/career-advice', profileData),
-  
   generateSimulationQuestions: (jobTitle: string, difficulty: string) => 
     api.post('/ai/generate-questions', { jobTitle, difficulty }),
-    
   analyzeMockInterview: (audioBlob: Blob) => {
     const fd = new FormData();
     fd.append('audio', audioBlob);
@@ -198,11 +216,8 @@ export const aiApi = {
  */
 export const systemApi = {
   getNotifications: () => api.get('/notifications'),
-  
   markNotificationRead: (id: string) => api.patch(`/notifications/${id}/read`),
-  
   markAllNotificationsRead: () => api.patch('/notifications/read-all'),
-  
   getLandingPageStats: () => api.get('/public/stats'),
 };
 
@@ -211,13 +226,17 @@ export const systemApi = {
  */
 export const adminApi = {
   getAllUsers: (params?: any) => api.get('/admin/users', { params }),
-  
   updateUserStatus: (userId: string, status: 'active' | 'suspended') => 
     api.patch(`/admin/users/${userId}/status`, { status }),
-    
   getSystemLogs: () => api.get('/admin/logs'),
-  
   getAdminStats: () => api.get('/admin/stats'),
+  
+  // Admin invitation management
+  getAllInvitations: (params?: any) => api.get('/admin/invitations', { params }),
+  resendAdminInvitation: (invitationId: string) => 
+    api.post(`/admin/invitations/${invitationId}/resend`),
+  deleteAdminInvitation: (invitationId: string) => 
+    api.delete(`/admin/invitations/${invitationId}`),
 };
 
 /** 
@@ -227,6 +246,24 @@ export const apiHelpers = {
   setToken: (token: string) => localStorage.setItem('accessToken', token),
   getToken: () => localStorage.getItem('accessToken'),
   clearSession: () => localStorage.clear(),
+  
+  // Additional helpers
+  isAuthenticated: (): boolean => {
+    return !!localStorage.getItem('accessToken');
+  },
+  
+  getUserRole: (): UserRole | null => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) return null;
+    
+    try {
+      // Decode JWT token to get role
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.role;
+    } catch {
+      return null;
+    }
+  },
 };
 
 export default api;
