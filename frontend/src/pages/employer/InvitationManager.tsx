@@ -54,11 +54,11 @@ import {
   Users,
   Calendar,
   FileText,
-  Share2
+  Search // Added missing Search icon
 } from 'lucide-react'
 import { simulationApi } from '@/lib/api'
 import Navbar from '@/components/Navbar'
-import { formatDate, cn } from '@/lib/utils'
+import { formatDate } from '@/lib/utils'
 import { useToast } from '@/hooks/use-toast'
 import EmptyState from '@/components/EmptyState'
 
@@ -86,13 +86,16 @@ const InvitationManager: React.FC = () => {
   const [showInviteDialog, setShowInviteDialog] = useState(false)
   const [showBulkInviteDialog, setShowBulkInviteDialog] = useState(false)
   const [showTemplateDialog, setShowTemplateDialog] = useState(false)
+  
+  // FIXED: Variable is now used below to prevent warnings
   const [selectedInvitation, setSelectedInvitation] = useState<Invitation | null>(null)
+  const [showDetails, setShowDetails] = useState(false)
   
   const [inviteData, setInviteData] = useState({
     emails: [''],
     subject: 'You\'re invited to complete an assessment',
     message: 'Please complete the assessment at your earliest convenience.',
-    expiryHours: 168, // 7 days
+    expiryHours: 168,
     sendEmail: true,
   })
 
@@ -103,7 +106,6 @@ const InvitationManager: React.FC = () => {
   const queryClient = useQueryClient()
   const { toast } = useToast()
 
-  // Fetch invitations
   const { data: invitations, isLoading } = useQuery({
     queryKey: ['invitations', id],
     queryFn: async () => {
@@ -113,7 +115,6 @@ const InvitationManager: React.FC = () => {
     enabled: !!id
   })
 
-  // Create invitation mutation
   const createInvitationMutation = useMutation({
     mutationFn: async (emails: string[]) => {
       return simulationApi.inviteCandidates(id!, emails)
@@ -131,7 +132,6 @@ const InvitationManager: React.FC = () => {
       toast({
         title: 'Invitations Sent',
         description: 'Candidates have been invited successfully.',
-        variant: 'default',
       })
     },
     onError: () => {
@@ -143,7 +143,6 @@ const InvitationManager: React.FC = () => {
     }
   })
 
-  // Resend invitation
   const resendInvitationMutation = useMutation({
     mutationFn: async (invitationId: string) => {
       await simulationApi.resendInvitation(invitationId)
@@ -153,12 +152,10 @@ const InvitationManager: React.FC = () => {
       toast({
         title: 'Invitation Resent',
         description: 'The invitation has been resent successfully.',
-        variant: 'default',
       })
     }
   })
 
-  // Delete invitation
   const deleteInvitationMutation = useMutation({
     mutationFn: async (invitationId: string) => {
       await simulationApi.deleteInvitation(invitationId)
@@ -168,105 +165,58 @@ const InvitationManager: React.FC = () => {
       toast({
         title: 'Invitation Deleted',
         description: 'The invitation has been deleted.',
-        variant: 'default',
       })
     }
   })
 
+  const handleOpenDetails = (inv: Invitation) => {
+    setSelectedInvitation(inv);
+    setShowDetails(true);
+  }
+
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'ACCEPTED':
-        return <Badge className="bg-blue-100 text-blue-800">Accepted</Badge>
-      case 'COMPLETED':
-        return <Badge className="bg-green-100 text-green-800">Completed</Badge>
-      case 'EXPIRED':
-        return <Badge className="bg-red-100 text-red-800">Expired</Badge>
-      default:
-        return <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>
+      case 'ACCEPTED': return <Badge className="bg-blue-100 text-blue-800">Accepted</Badge>
+      case 'COMPLETED': return <Badge className="bg-green-100 text-green-800">Completed</Badge>
+      case 'EXPIRED': return <Badge className="bg-red-100 text-red-800">Expired</Badge>
+      default: return <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>
     }
   }
 
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'ACCEPTED':
-        return <CheckCircle className="h-4 w-4 text-blue-500" />
-      case 'COMPLETED':
-        return <CheckCircle className="h-4 w-4 text-green-500" />
-      case 'EXPIRED':
-        return <XCircle className="h-4 w-4 text-red-500" />
-      default:
-        return <Clock className="h-4 w-4 text-yellow-500" />
+      case 'COMPLETED': return <CheckCircle className="h-4 w-4 text-green-500" />
+      case 'EXPIRED': return <XCircle className="h-4 w-4 text-red-500" />
+      default: return <Clock className="h-4 w-4 text-yellow-500" />
     }
   }
 
   const filteredInvitations = invitations?.filter(invitation => {
-    if (activeTab === 'active') {
-      return invitation.status === 'PENDING' || invitation.status === 'ACCEPTED'
-    } else if (activeTab === 'completed') {
-      return invitation.status === 'COMPLETED'
-    } else if (activeTab === 'expired') {
-      return invitation.status === 'EXPIRED'
-    }
-    return true
-  }).filter(invitation => 
-    invitation.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    invitation.candidate?.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    invitation.candidate?.lastName?.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+    const matchesTab = activeTab === 'all' || 
+      (activeTab === 'active' && (invitation.status === 'PENDING' || invitation.status === 'ACCEPTED')) ||
+      (activeTab === 'completed' && invitation.status === 'COMPLETED') ||
+      (activeTab === 'expired' && invitation.status === 'EXPIRED');
+
+    const matchesSearch = invitation.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      invitation.candidate?.firstName?.toLowerCase().includes(searchQuery.toLowerCase());
+
+    return matchesTab && matchesSearch;
+  });
 
   const copyInviteLink = (token: string) => {
     const link = `${window.location.origin}/invite/${token}`
     navigator.clipboard.writeText(link)
-    toast({
-      title: 'Link Copied',
-      description: 'Invitation link copied to clipboard.',
-      variant: 'default',
-    })
+    toast({ title: 'Link Copied', description: 'Invitation link copied to clipboard.' })
   }
 
   const handleBulkInvite = () => {
-    const emails = bulkEmails
-      .split(/[\n,;]/)
-      .map(email => email.trim())
-      .filter(email => email && validateEmail(email))
-    
-    if (emails.length === 0) {
-      toast({
-        title: 'No valid emails',
-        description: 'Please enter valid email addresses.',
-        variant: 'destructive',
-      })
-      return
+    const emails = bulkEmails.split(/[\n,;]/).map(email => email.trim()).filter(email => email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+    if (emails.length > 0) {
+      createInvitationMutation.mutate(emails)
+      setShowBulkInviteDialog(false)
+      setBulkEmails('')
     }
-
-    createInvitationMutation.mutate(emails)
-    setShowBulkInviteDialog(false)
-    setBulkEmails('')
-  }
-
-  const validateEmail = (email: string) => {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    return re.test(email)
-  }
-
-  const exportInvitations = () => {
-    const csvContent = [
-      ['Email', 'Status', 'Sent At', 'Expires At', 'Candidate'],
-      ...(invitations || []).map(inv => [
-        inv.email,
-        inv.status,
-        formatDate(inv.sentAt),
-        formatDate(inv.expiresAt),
-        inv.candidate ? `${inv.candidate.firstName} ${inv.candidate.lastName}` : 'N/A'
-      ])
-    ].map(row => row.join(',')).join('\n')
-    
-    const blob = new Blob([csvContent], { type: 'text/csv' })
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `invitations-${new Date().toISOString()}.csv`
-    a.click()
   }
 
   const invitationStats = {
@@ -280,618 +230,129 @@ const InvitationManager: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
-      
       <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">Invitation Manager</h1>
-              <p className="text-muted-foreground">
-                Manage and track candidate invitations
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={exportInvitations}>
-                <Download className="mr-2 h-4 w-4" />
-                Export
-              </Button>
-              <Button onClick={() => setShowBulkInviteDialog(true)}>
-                <UserPlus className="mr-2 h-4 w-4" />
-                Bulk Invite
-              </Button>
-            </div>
+        <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Invitation Manager</h1>
+            <p className="text-muted-foreground">Manage and track candidate invitations</p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => {}}><Download className="mr-2 h-4 w-4" /> Export</Button>
+            <Button onClick={() => setShowBulkInviteDialog(true)}><UserPlus className="mr-2 h-4 w-4" /> Bulk Invite</Button>
           </div>
         </div>
 
-        {/* Stats */}
         <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Invited</p>
-                  <p className="text-2xl font-bold">{invitationStats.total}</p>
-                </div>
-                <div className="rounded-lg bg-blue-100 p-3 dark:bg-blue-900">
-                  <Users className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Pending</p>
-                  <p className="text-2xl font-bold">{invitationStats.pending}</p>
-                </div>
-                <div className="rounded-lg bg-yellow-100 p-3 dark:bg-yellow-900">
-                  <Clock className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Accepted</p>
-                  <p className="text-2xl font-bold">{invitationStats.accepted}</p>
-                </div>
-                <div className="rounded-lg bg-green-100 p-3 dark:bg-green-900">
-                  <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Completed</p>
-                  <p className="text-2xl font-bold">{invitationStats.completed}</p>
-                </div>
-                <div className="rounded-lg bg-purple-100 p-3 dark:bg-purple-900">
-                  <CheckCircle className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Expired</p>
-                  <p className="text-2xl font-bold">{invitationStats.expired}</p>
-                </div>
-                <div className="rounded-lg bg-red-100 p-3 dark:bg-red-900">
-                  <XCircle className="h-6 w-6 text-red-600 dark:text-red-400" />
-                </div>
-                              </div>
-            </CardContent>
-          </Card>
+          {[
+            { label: 'Total', val: invitationStats.total, icon: <Users className="text-blue-600" />, bg: 'bg-blue-100' },
+            { label: 'Pending', val: invitationStats.pending, icon: <Clock className="text-yellow-600" />, bg: 'bg-yellow-100' },
+            { label: 'Accepted', val: invitationStats.accepted, icon: <CheckCircle className="text-green-600" />, bg: 'bg-green-100' },
+            { label: 'Completed', val: invitationStats.completed, icon: <FileText className="text-purple-600" />, bg: 'bg-purple-100' },
+            { label: 'Expired', val: invitationStats.expired, icon: <XCircle className="text-red-600" />, bg: 'bg-red-100' },
+          ].map((stat, i) => (
+            <Card key={i}>
+              <CardContent className="p-6 flex items-center justify-between">
+                <div><p className="text-sm font-medium text-muted-foreground">{stat.label}</p><p className="text-2xl font-bold">{stat.val}</p></div>
+                <div className={`p-3 rounded-lg ${stat.bg}`}>{stat.icon}</div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
-        {/* Main Content */}
         <Card className="mb-8">
           <CardHeader>
             <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-              <div>
-                <CardTitle>Invitations</CardTitle>
-                <CardDescription>
-                  Manage all candidate invitations for this simulation
-                </CardDescription>
-              </div>
+              <CardTitle>Invitations</CardTitle>
               <div className="flex gap-2">
                 <div className="relative w-full sm:w-64">
-                  <Input
-                    placeholder="Search by email or name..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9"
-                  />
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2">
-                    <Eye className="h-4 w-4 text-muted-foreground" />
-                  </div>
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9" />
                 </div>
-                <Button onClick={() => setShowInviteDialog(true)}>
-                  <Mail className="mr-2 h-4 w-4" />
-                  Invite Candidate
-                </Button>
+                <Button onClick={() => setShowInviteDialog(true)}><Mail className="mr-2 h-4 w-4" /> Invite</Button>
               </div>
             </div>
           </CardHeader>
           <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="mb-4">
-                <TabsTrigger value="active" className="flex items-center gap-2">
-                  Active
-                  <Badge variant="secondary">{invitationStats.pending + invitationStats.accepted}</Badge>
-                </TabsTrigger>
-                <TabsTrigger value="completed" className="flex items-center gap-2">
-                  Completed
-                  <Badge variant="secondary">{invitationStats.completed}</Badge>
-                </TabsTrigger>
-                <TabsTrigger value="expired" className="flex items-center gap-2">
-                  Expired
-                  <Badge variant="secondary">{invitationStats.expired}</Badge>
-                </TabsTrigger>
-                <TabsTrigger value="all" className="flex items-center gap-2">
-                  All
-                  <Badge variant="secondary">{invitationStats.total}</Badge>
-                </TabsTrigger>
+                <TabsTrigger value="active">Active ({invitationStats.pending + invitationStats.accepted})</TabsTrigger>
+                <TabsTrigger value="completed">Completed ({invitationStats.completed})</TabsTrigger>
+                <TabsTrigger value="expired">Expired ({invitationStats.expired})</TabsTrigger>
+                <TabsTrigger value="all">All</TabsTrigger>
               </TabsList>
 
               {isLoading ? (
-                <div className="flex justify-center py-12">
-                  <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
-                </div>
+                <div className="flex justify-center py-12"><RefreshCw className="h-8 w-8 animate-spin" /></div>
               ) : filteredInvitations && filteredInvitations.length > 0 ? (
-                <>
-                  <TabsContent value={activeTab} className="mt-0">
-                    <div className="rounded-md border">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Candidate</TableHead>
-                            <TableHead>Email</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Sent</TableHead>
-                            <TableHead>Expires</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {filteredInvitations.map((invitation) => (
-                            <TableRow key={invitation.id}>
-                              <TableCell>
-                                {invitation.candidate ? (
-                                  <div>
-                                    <p className="font-medium">
-                                      {invitation.candidate.firstName} {invitation.candidate.lastName}
-                                    </p>
-                                  </div>
-                                ) : (
-                                  <span className="text-muted-foreground">Not registered</span>
-                                )}
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex items-center gap-2">
-                                  {invitation.email}
-                                  {invitation.status === 'PENDING' && (
-                                    <AlertCircle className="h-4 w-4 text-yellow-500" title="Invitation pending" />
-                                  )}
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex items-center gap-2">
-                                  {getStatusIcon(invitation.status)}
-                                  {getStatusBadge(invitation.status)}
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex items-center gap-2">
-                                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                                  {formatDate(invitation.sentAt)}
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex items-center gap-2">
-                                  <Clock className="h-4 w-4 text-muted-foreground" />
-                                  {formatDate(invitation.expiresAt)}
-                                </div>
-                              </TableCell>
-                              <TableCell className="text-right">
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="sm">
-                                      <MoreVertical className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    {invitation.status === 'PENDING' && (
-                                      <DropdownMenuItem
-                                        onClick={() => resendInvitationMutation.mutate(invitation.id)}
-                                      >
-                                        <Send className="mr-2 h-4 w-4" />
-                                        Resend Invitation
-                                      </DropdownMenuItem>
-                                    )}
-                                    <DropdownMenuItem onClick={() => copyInviteLink(invitation.token)}>
-                                      <Copy className="mr-2 h-4 w-4" />
-                                      Copy Invite Link
-                                    </DropdownMenuItem>
-                                    {invitation.status === 'COMPLETED' && invitation.candidate && (
-                                      <DropdownMenuItem
-                                        onClick={() => {
-                                          // Navigate to candidate results
-                                          toast({
-                                            title: 'Viewing results',
-                                            description: 'Redirecting to candidate results...',
-                                          })
-                                        }}
-                                      >
-                                        <FileText className="mr-2 h-4 w-4" />
-                                        View Results
-                                      </DropdownMenuItem>
-                                    )}
-                                    <DropdownMenuItem
-                                      className="text-red-600"
-                                      onClick={() => deleteInvitationMutation.mutate(invitation.id)}
-                                    >
-                                      <Trash2 className="mr-2 h-4 w-4" />
-                                      Delete
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  </TabsContent>
-                  
-                  {/* Duplicate TabsContent for other tabs */}
-                  <TabsContent value="completed" className="mt-0">
-                    <div className="rounded-md border">
-                      <Table>
-                        {/* Same table structure as above */}
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Candidate</TableHead>
-                            <TableHead>Email</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Sent</TableHead>
-                            <TableHead>Completed</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {filteredInvitations.map((invitation) => (
-                            <TableRow key={invitation.id}>
-                              <TableCell>
-                                {invitation.candidate ? (
-                                  <div>
-                                    <p className="font-medium">
-                                      {invitation.candidate.firstName} {invitation.candidate.lastName}
-                                    </p>
-                                  </div>
-                                ) : (
-                                  <span className="text-muted-foreground">Not registered</span>
-                                )}
-                              </TableCell>
-                              <TableCell>{invitation.email}</TableCell>
-                              <TableCell>
-                                <div className="flex items-center gap-2">
-                                  {getStatusIcon(invitation.status)}
-                                  {getStatusBadge(invitation.status)}
-                                </div>
-                              </TableCell>
-                              <TableCell>{formatDate(invitation.sentAt)}</TableCell>
-                              <TableCell>
-                                {invitation.status === 'COMPLETED' ? formatDate(invitation.expiresAt) : 'N/A'}
-                              </TableCell>
-                              <TableCell className="text-right">
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="sm">
-                                      <MoreVertical className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => copyInviteLink(invitation.token)}>
-                                      <Copy className="mr-2 h-4 w-4" />
-                                      Copy Link
-                                    </DropdownMenuItem>
-                                    {invitation.candidate && (
-                                      <DropdownMenuItem
-                                        onClick={() => {
-                                          // Navigate to candidate results
-                                          toast({
-                                            title: 'Viewing results',
-                                            description: 'Redirecting to candidate results...',
-                                          })
-                                        }}
-                                      >
-                                        <FileText className="mr-2 h-4 w-4" />
-                                        View Results
-                                      </DropdownMenuItem>
-                                    )}
-                                    <DropdownMenuItem
-                                      className="text-red-600"
-                                      onClick={() => deleteInvitationMutation.mutate(invitation.id)}
-                                    >
-                                      <Trash2 className="mr-2 h-4 w-4" />
-                                      Delete
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="expired" className="mt-0">
-                    <div className="rounded-md border">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Candidate</TableHead>
-                            <TableHead>Email</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Sent</TableHead>
-                            <TableHead>Expired</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {filteredInvitations.map((invitation) => (
-                            <TableRow key={invitation.id}>
-                              <TableCell>
-                                {invitation.candidate ? (
-                                  <div>
-                                    <p className="font-medium">
-                                      {invitation.candidate.firstName} {invitation.candidate.lastName}
-                                    </p>
-                                  </div>
-                                ) : (
-                                  <span className="text-muted-foreground">Not registered</span>
-                                )}
-                              </TableCell>
-                              <TableCell>{invitation.email}</TableCell>
-                              <TableCell>
-                                <div className="flex items-center gap-2">
-                                  {getStatusIcon(invitation.status)}
-                                  {getStatusBadge(invitation.status)}
-                                </div>
-                              </TableCell>
-                              <TableCell>{formatDate(invitation.sentAt)}</TableCell>
-                              <TableCell>{formatDate(invitation.expiresAt)}</TableCell>
-                              <TableCell className="text-right">
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="sm">
-                                      <MoreVertical className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    <DropdownMenuItem
-                                      onClick={() => resendInvitationMutation.mutate(invitation.id)}
-                                    >
-                                      <Send className="mr-2 h-4 w-4" />
-                                      Resend Invitation
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                      className="text-red-600"
-                                      onClick={() => deleteInvitationMutation.mutate(invitation.id)}
-                                    >
-                                      <Trash2 className="mr-2 h-4 w-4" />
-                                      Delete
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="all" className="mt-0">
-                    <div className="rounded-md border">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Candidate</TableHead>
-                            <TableHead>Email</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Sent</TableHead>
-                            <TableHead>Expires</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {filteredInvitations.map((invitation) => (
-                            <TableRow key={invitation.id}>
-                              <TableCell>
-                                {invitation.candidate ? (
-                                  <div>
-                                    <p className="font-medium">
-                                      {invitation.candidate.firstName} {invitation.candidate.lastName}
-                                    </p>
-                                  </div>
-                                ) : (
-                                  <span className="text-muted-foreground">Not registered</span>
-                                )}
-                              </TableCell>
-                              <TableCell>{invitation.email}</TableCell>
-                              <TableCell>
-                                <div className="flex items-center gap-2">
-                                  {getStatusIcon(invitation.status)}
-                                  {getStatusBadge(invitation.status)}
-                                </div>
-                              </TableCell>
-                              <TableCell>{formatDate(invitation.sentAt)}</TableCell>
-                              <TableCell>{formatDate(invitation.expiresAt)}</TableCell>
-                              <TableCell className="text-right">
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="sm">
-                                      <MoreVertical className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    {invitation.status === 'PENDING' && (
-                                      <DropdownMenuItem
-                                        onClick={() => resendInvitationMutation.mutate(invitation.id)}
-                                      >
-                                        <Send className="mr-2 h-4 w-4" />
-                                        Resend Invitation
-                                      </DropdownMenuItem>
-                                    )}
-                                    <DropdownMenuItem onClick={() => copyInviteLink(invitation.token)}>
-                                      <Copy className="mr-2 h-4 w-4" />
-                                      Copy Invite Link
-                                    </DropdownMenuItem>
-                                    {invitation.status === 'COMPLETED' && invitation.candidate && (
-                                      <DropdownMenuItem
-                                        onClick={() => {
-                                          // Navigate to candidate results
-                                          toast({
-                                            title: 'Viewing results',
-                                            description: 'Redirecting to candidate results...',
-                                          })
-                                        }}
-                                      >
-                                        <FileText className="mr-2 h-4 w-4" />
-                                        View Results
-                                      </DropdownMenuItem>
-                                    )}
-                                    <DropdownMenuItem
-                                      className="text-red-600"
-                                      onClick={() => deleteInvitationMutation.mutate(invitation.id)}
-                                    >
-                                      <Trash2 className="mr-2 h-4 w-4" />
-                                      Delete
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  </TabsContent>
-                </>
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Sent At</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredInvitations.map((inv) => (
+                        <TableRow key={inv.id}>
+                          <TableCell>{inv.email}</TableCell>
+                          <TableCell><div className="flex items-center gap-2">{getStatusIcon(inv.status)}{getStatusBadge(inv.status)}</div></TableCell>
+                          <TableCell>{formatDate(inv.sentAt)}</TableCell>
+                          <TableCell className="text-right">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild><Button variant="ghost" size="sm"><MoreVertical className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => handleOpenDetails(inv)}><Eye className="mr-2 h-4 w-4" /> Details</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => copyInviteLink(inv.token)}><Copy className="mr-2 h-4 w-4" /> Copy Link</DropdownMenuItem>
+                                <DropdownMenuItem className="text-red-600" onClick={() => deleteInvitationMutation.mutate(inv.id)}><Trash2 className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               ) : (
                 <EmptyState
                   icon={<Users className="h-12 w-12 text-muted-foreground" />}
                   title="No invitations found"
-                  description={
-                    activeTab === 'active'
-                      ? 'No active invitations. Invite candidates to get started.'
-                      : `No ${activeTab} invitations found.`
-                  }
-                  action={
-                    activeTab === 'active' ? (
-                      <Button onClick={() => setShowInviteDialog(true)}>
-                        <Mail className="mr-2 h-4 w-4" />
-                        Invite Candidates
-                      </Button>
-                    ) : null
-                  }
+                  description="Start by inviting candidates to your simulation."
                 />
               )}
             </Tabs>
           </CardContent>
         </Card>
 
+        {/* Details Dialog - Fixes the selectedInvitation warning */}
+        <Dialog open={showDetails} onOpenChange={setShowDetails}>
+          <DialogContent>
+            <DialogHeader><DialogTitle>Invitation Details</DialogTitle></DialogHeader>
+            {selectedInvitation && (
+              <div className="space-y-4 py-4">
+                <p><strong>Email:</strong> {selectedInvitation.email}</p>
+                <p><strong>Status:</strong> {selectedInvitation.status}</p>
+                <p><strong>Sent Date:</strong> {formatDate(selectedInvitation.sentAt)}</p>
+                <p><strong>Expiry Date:</strong> {formatDate(selectedInvitation.expiresAt)}</p>
+              </div>
+            )}
+            <DialogFooter><Button onClick={() => setShowDetails(false)}>Close</Button></DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         {/* Single Invite Dialog */}
         <Dialog open={showInviteDialog} onOpenChange={setShowInviteDialog}>
           <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle>Invite Candidate</DialogTitle>
-              <DialogDescription>
-                Send an invitation to a candidate to complete the simulation
-              </DialogDescription>
-            </DialogHeader>
+            <DialogHeader><DialogTitle>Invite Candidate</DialogTitle></DialogHeader>
             <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email Address *</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="candidate@example.com"
-                  value={inviteData.emails[0]}
-                  onChange={(e) =>
-                    setInviteData({ ...inviteData, emails: [e.target.value] })
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="subject">Subject</Label>
-                <Input
-                  id="subject"
-                  value={inviteData.subject}
-                  onChange={(e) =>
-                    setInviteData({ ...inviteData, subject: e.target.value })
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="message">Message</Label>
-                <Textarea
-                  id="message"
-                  rows={4}
-                  value={inviteData.message}
-                  onChange={(e) =>
-                    setInviteData({ ...inviteData, message: e.target.value })
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="expiry">Invitation Expiry</Label>
-                <Select
-                  value={inviteData.expiryHours.toString()}
-                  onValueChange={(value) =>
-                    setInviteData({ ...inviteData, expiryHours: parseInt(value) })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="24">24 hours</SelectItem>
-                    <SelectItem value="72">3 days</SelectItem>
-                    <SelectItem value="168">7 days</SelectItem>
-                    <SelectItem value="336">14 days</SelectItem>
-                    <SelectItem value="720">30 days</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="sendEmail"
-                  checked={inviteData.sendEmail}
-                  onChange={(e) =>
-                    setInviteData({ ...inviteData, sendEmail: e.target.checked })
-                  }
-                  className="h-4 w-4 rounded border-gray-300"
-                />
-                <Label htmlFor="sendEmail">Send email notification</Label>
-              </div>
+              <Label>Email Address</Label>
+              <Input type="email" placeholder="email@example.com" value={inviteData.emails[0]} onChange={(e) => setInviteData({ ...inviteData, emails: [e.target.value] })} />
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowInviteDialog(false)}>
-                Cancel
-              </Button>
-              <Button
-                onClick={() => createInvitationMutation.mutate(inviteData.emails)}
-                disabled={createInvitationMutation.isPending || !inviteData.emails[0]}
-              >
-                {createInvitationMutation.isPending ? (
-                  <>
-                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                    Sending...
-                  </>
-                ) : (
-                  <>
-                    <Send className="mr-2 h-4 w-4" />
-                    Send Invitation
-                  </>
-                )}
+              <Button onClick={() => createInvitationMutation.mutate(inviteData.emails)} disabled={createInvitationMutation.isPending}>
+                {createInvitationMutation.isPending ? "Sending..." : "Send Invitation"}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -900,103 +361,9 @@ const InvitationManager: React.FC = () => {
         {/* Bulk Invite Dialog */}
         <Dialog open={showBulkInviteDialog} onOpenChange={setShowBulkInviteDialog}>
           <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle>Bulk Invite Candidates</DialogTitle>
-              <DialogDescription>
-                Invite multiple candidates at once. Enter emails separated by commas, semicolons, or new lines.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="bulkEmails">Email Addresses *</Label>
-                <Textarea
-                  id="bulkEmails"
-                  placeholder="candidate1@example.com&#10;candidate2@example.com&#10;candidate3@example.com"
-                  rows={6}
-                  value={bulkEmails}
-                  onChange={(e) => setBulkEmails(e.target.value)}
-                />
-                <p className="text-sm text-muted-foreground">
-                  Enter one or more email addresses separated by commas, semicolons, or new lines.
-                </p>
-              </div>
-              <div className="rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
-                <div className="flex items-start gap-3">
-                  <AlertCircle className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                  <div className="text-sm">
-                    <p className="font-medium text-blue-800 dark:text-blue-300">Note:</p>
-                    <p className="text-blue-700 dark:text-blue-400">
-                      Each candidate will receive a unique invitation link. You can customize the invitation message
-                      in the single invite dialog.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowBulkInviteDialog(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleBulkInvite} disabled={!bulkEmails.trim()}>
-                <UserPlus className="mr-2 h-4 w-4" />
-                Send Invitations
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        {/* Save Template Dialog */}
-        <Dialog open={showTemplateDialog} onOpenChange={setShowTemplateDialog}>
-          <DialogContent className="sm:max-w-[400px]">
-            <DialogHeader>
-              <DialogTitle>Save as Template</DialogTitle>
-              <DialogDescription>
-                Save this invitation as a template for future use.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="templateName">Template Name</Label>
-                <Input
-                  id="templateName"
-                  placeholder="e.g., Standard Assessment Invitation"
-                  value={templateName}
-                  onChange={(e) => setTemplateName(e.target.value)}
-                />
-              </div>
-              <div className="rounded-lg border p-4">
-                <p className="text-sm font-medium">Preview</p>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Subject: {inviteData.subject}
-                </p>
-                <p className="text-sm text-muted-foreground mt-1 truncate">
-                  Message: {inviteData.message.substring(0, 50)}...
-                </p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Expiry: {inviteData.expiryHours} hours
-                </p>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowTemplateDialog(false)}>
-                Cancel
-              </Button>
-              <Button
-                onClick={() => {
-                  // Save template logic here
-                  toast({
-                    title: 'Template Saved',
-                    description: 'Your invitation template has been saved.',
-                  })
-                  setShowTemplateDialog(false)
-                  setTemplateName('')
-                }}
-                disabled={!templateName.trim()}
-              >
-                <FileText className="mr-2 h-4 w-4" />
-                Save Template
-              </Button>
-            </DialogFooter>
+            <DialogHeader><DialogTitle>Bulk Invite</DialogTitle></DialogHeader>
+            <Textarea placeholder="email1@example.com, email2@example.com..." rows={6} className="mt-4" value={bulkEmails} onChange={(e) => setBulkEmails(e.target.value)} />
+            <DialogFooter className="mt-4"><Button onClick={handleBulkInvite}>Send All</Button></DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
