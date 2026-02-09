@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -9,15 +9,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
-import { Slider } from '@/components/ui/slider'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { Input } from '@/components/ui/input' // Fixed missing import
+import { Slider } from '@/components/ui/slider' // Fixed missing import
+
 import {
   Dialog,
   DialogContent,
@@ -25,7 +19,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog'
 import {
   DropdownMenu,
@@ -33,35 +26,18 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+
 import {
   BarChart3,
   User,
   MessageSquare,
-  Star,
   CheckCircle,
   XCircle,
   Clock,
   Download,
-  Send,
-  MoreVertical,
   Eye,
-  ThumbsUp,
-  ThumbsDown,
-  Calendar,
-  Award,
-  AlertTriangle,
   Filter,
   Search,
-  FileText,
-  TrendingUp,
-  Users
 } from 'lucide-react'
 import { simulationApi, aiApi } from '@/lib/api'
 import Navbar from '@/components/Navbar'
@@ -139,22 +115,21 @@ const CandidateEvaluation: React.FC = () => {
     },
     enabled: !!submissionId
   })
-
-  // AI evaluation mutation
+  
   const evaluateMutation = useMutation({
-    mutationFn: async (submissionId: string) => {
-      const submission = submissions?.find(s => s.id === submissionId)
+    mutationFn: async (subId: string) => {
+      const submission = submissions?.find(s => s.id === subId)
       if (!submission) throw new Error('Submission not found')
       
       const response = await aiApi.evaluate({
         submission: submission.content,
         rubric: ratings,
-        expectedOutput: null // Would come from simulation settings
+        expectedOutput: null 
       })
       
       return response.data
     },
-    onSuccess: (data, submissionId) => {
+    onSuccess: () => { // Fixed unused variables (data, submissionId)
       queryClient.invalidateQueries({ queryKey: ['submissions', id] })
       toast({
         title: 'AI Evaluation Complete',
@@ -278,12 +253,18 @@ const CandidateEvaluation: React.FC = () => {
   const currentSubmission = selectedSubmission || submissionDetails
   const overallScore = calculateOverallScore()
 
+  // Filter logic for candidates list
+  const filteredSubmissions = submissions?.filter(sub => {
+    const fullName = `${sub.user?.firstName} ${sub.user?.lastName}`.toLowerCase()
+    const email = sub.user?.email.toLowerCase() || ''
+    return fullName.includes(searchQuery.toLowerCase()) || email.includes(searchQuery.toLowerCase())
+  })
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
       
       <div className="container mx-auto px-4 py-8">
-        {/* Header */}
         <div className="mb-8">
           <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
             <div>
@@ -324,7 +305,6 @@ const CandidateEvaluation: React.FC = () => {
         </div>
 
         <div className="grid gap-8 lg:grid-cols-3">
-          {/* Left Column - Candidate List */}
           <div className="lg:col-span-1">
             <Card>
               <CardHeader>
@@ -336,7 +316,7 @@ const CandidateEvaluation: React.FC = () => {
                       placeholder="Search candidates..."
                       className="pl-10 w-48"
                       value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onChange={(e) => setSearchQuery(e.target.value)} // Fixed (e) underlined error
                     />
                   </div>
                 </div>
@@ -345,8 +325,8 @@ const CandidateEvaluation: React.FC = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  {submissions?.map((submission) => (
+                <div className="space-y-2 max-h-[600px] overflow-y-auto pr-2">
+                  {filteredSubmissions?.map((submission) => (
                     <Card
                       key={submission.id}
                       className={cn(
@@ -364,7 +344,7 @@ const CandidateEvaluation: React.FC = () => {
                                 <User className="h-4 w-4" />
                               </div>
                               <div>
-                                <p className="font-medium">
+                                <p className="font-medium text-sm">
                                   {submission.user 
                                     ? `${submission.user.firstName} ${submission.user.lastName}`
                                     : 'Anonymous Candidate'
@@ -385,7 +365,7 @@ const CandidateEvaluation: React.FC = () => {
                               )}
                             </div>
                             
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                               <Clock className="h-3 w-3" />
                               {formatDate(submission.completedAt)}
                             </div>
@@ -410,7 +390,7 @@ const CandidateEvaluation: React.FC = () => {
                               onClick={(e) => {
                                 e.stopPropagation()
                                 setSelectedSubmission(submission)
-                                setActiveTab('details')
+                                setActiveTab('submission')
                               }}
                             >
                               <Eye className="h-4 w-4" />
@@ -420,12 +400,14 @@ const CandidateEvaluation: React.FC = () => {
                       </CardContent>
                     </Card>
                   ))}
+                  {filteredSubmissions?.length === 0 && (
+                     <p className="text-center text-sm text-muted-foreground py-4">No candidates found.</p>
+                  )}
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Right Column - Evaluation Panel */}
           <div className="lg:col-span-2">
             {currentSubmission ? (
               <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -436,63 +418,37 @@ const CandidateEvaluation: React.FC = () => {
                   <TabsTrigger value="feedback">Feedback</TabsTrigger>
                 </TabsList>
 
-                {/* Overview Tab */}
-                <TabsContent value="overview" className="space-y-6">
+                <TabsContent value="overview" className="space-y-6 mt-0">
                   <Card>
                     <CardHeader>
                       <CardTitle>Candidate Overview</CardTitle>
-                      <CardDescription>
-                        Basic information and performance summary
-                      </CardDescription>
                     </CardHeader>
                     <CardContent>
                       <div className="grid gap-6 md:grid-cols-2">
                         <div className="space-y-4">
                           <div>
-                            <h3 className="text-sm font-medium text-muted-foreground">
-                              Candidate Information
-                            </h3>
-                            <div className="mt-2 space-y-2">
-                              <p className="font-medium">
+                            <h3 className="text-sm font-medium text-muted-foreground">Information</h3>
+                            <div className="mt-2">
+                              <p className="font-medium text-lg">
                                 {currentSubmission.user 
                                   ? `${currentSubmission.user.firstName} ${currentSubmission.user.lastName}`
-                                  : 'Anonymous Candidate'
+                                  : 'Anonymous'
                                 }
                               </p>
-                              <p className="text-sm text-muted-foreground">
-                                {currentSubmission.user?.email || 'No email provided'}
-                              </p>
-                              <div className="flex items-center gap-2">
-                                <Calendar className="h-4 w-4 text-muted-foreground" />
-                                <span className="text-sm">
-                                  Submitted {formatDate(currentSubmission.completedAt)}
-                                </span>
-                              </div>
+                              <p className="text-sm text-muted-foreground">{currentSubmission.user?.email}</p>
                             </div>
                           </div>
 
                           <div>
-                            <h3 className="text-sm font-medium text-muted-foreground">
-                              Assessment Details
-                            </h3>
+                            <h3 className="text-sm font-medium text-muted-foreground">Assessment</h3>
                             <div className="mt-2 space-y-2">
-                              <div className="flex items-center justify-between">
-                                <span className="text-sm">Step</span>
-                                <Badge variant="outline">
-                                  {currentSubmission.step.title}
-                                </Badge>
+                              <div className="flex justify-between text-sm">
+                                <span>Step:</span>
+                                <Badge variant="outline">{currentSubmission.step.title}</Badge>
                               </div>
-                              <div className="flex items-center justify-between">
-                                <span className="text-sm">Type</span>
-                                <Badge variant="secondary">
-                                  {currentSubmission.step.type.replace('_', ' ')}
-                                </Badge>
-                              </div>
-                              <div className="flex items-center justify-between">
-                                <span className="text-sm">Integrity Flags</span>
-                                <Badge variant={
-                                  currentSubmission.integrityFlags.length > 0 ? 'destructive' : 'outline'
-                                }>
+                              <div className="flex justify-between text-sm">
+                                <span>Integrity:</span>
+                                <Badge variant={currentSubmission.integrityFlags.length > 0 ? 'destructive' : 'outline'}>
                                   {currentSubmission.integrityFlags.length} flags
                                 </Badge>
                               </div>
@@ -501,249 +457,122 @@ const CandidateEvaluation: React.FC = () => {
                         </div>
 
                         <div className="space-y-4">
-                          <div>
-                            <h3 className="text-sm font-medium text-muted-foreground">
-                              Score Summary
-                            </h3>
-                            <div className="mt-4 space-y-4">
-                              <div className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                  <span className="text-sm">Overall Score</span>
-                                  <span className={`text-lg font-bold ${getScoreColor(currentSubmission.score)}`}>
-                                    {currentSubmission.score?.toFixed(1) || '--'}%
-                                  </span>
-                                </div>
-                                <Progress 
-                                  value={currentSubmission.score || 0} 
-                                  className="h-2"
-                                />
-                              </div>
-
-                              {currentSubmission.aiFeedback && (
-                                <div className="space-y-2">
-                                  <h4 className="text-sm font-medium">AI Assessment</h4>
-                                  <div className="rounded-lg border p-3">
-                                    <p className="text-sm">
-                                      {currentSubmission.aiFeedback.summary || 'AI evaluation available'}
-                                    </p>
-                                  </div>
-                                </div>
-                              )}
+                          <h3 className="text-sm font-medium text-muted-foreground">Score Summary</h3>
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm">Overall</span>
+                              <span className={`text-lg font-bold ${getScoreColor(currentSubmission.score)}`}>
+                                {currentSubmission.score?.toFixed(1) || '--'}%
+                              </span>
                             </div>
+                            <Progress value={currentSubmission.score || 0} className="h-2" />
                           </div>
+                          {currentSubmission.aiFeedback?.summary && (
+                            <div className="rounded-lg border p-3 bg-muted/30">
+                              <p className="text-xs italic">{currentSubmission.aiFeedback.summary}</p>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </CardContent>
                   </Card>
 
-                  {/* Quick Actions */}
                   <Card>
                     <CardHeader>
                       <CardTitle>Quick Actions</CardTitle>
-                      <CardDescription>
-                        Manage this candidate's application
-                      </CardDescription>
                     </CardHeader>
                     <CardContent>
                       <div className="grid gap-4 sm:grid-cols-2">
-                        <Button
-                          variant="outline"
-                          className="justify-start"
-                          onClick={() => updateStatusMutation.mutate({
-                            submissionId: currentSubmission.id,
-                            status: 'shortlisted'
-                          })}
-                        >
-                          <CheckCircle className="mr-2 h-4 w-4" />
-                          Shortlist Candidate
+                        <Button variant="outline" className="justify-start" onClick={() => updateStatusMutation.mutate({ submissionId: currentSubmission.id, status: 'shortlisted' })}>
+                          <CheckCircle className="mr-2 h-4 w-4" /> Shortlist
                         </Button>
-                        <Button
-                          variant="outline"
-                          className="justify-start"
-                          onClick={() => updateStatusMutation.mutate({
-                            submissionId: currentSubmission.id,
-                            status: 'rejected'
-                          })}
-                        >
-                          <XCircle className="mr-2 h-4 w-4" />
-                          Reject Candidate
+                        <Button variant="outline" className="justify-start" onClick={() => updateStatusMutation.mutate({ submissionId: currentSubmission.id, status: 'rejected' })}>
+                          <XCircle className="mr-2 h-4 w-4" /> Reject
                         </Button>
-                        <Button
-                          variant="outline"
-                          className="justify-start"
-                          onClick={() => evaluateMutation.mutate(currentSubmission.id)}
-                          disabled={evaluateMutation.isPending}
-                        >
-                          <BarChart3 className="mr-2 h-4 w-4" />
-                          {evaluateMutation.isPending ? 'Evaluating...' : 'AI Evaluate'}
+                        <Button variant="outline" className="justify-start" disabled={evaluateMutation.isPending} onClick={() => evaluateMutation.mutate(currentSubmission.id)}>
+                          <BarChart3 className="mr-2 h-4 w-4" /> {evaluateMutation.isPending ? 'Evaluating...' : 'AI Evaluate'}
                         </Button>
-                        <Button
-                          variant="outline"
-                          className="justify-start"
-                          onClick={() => setShowFeedbackDialog(true)}
-                        >
-                          <MessageSquare className="mr-2 h-4 w-4" />
-                          Send Feedback
+                        <Button variant="outline" className="justify-start" onClick={() => setShowFeedbackDialog(true)}>
+                          <MessageSquare className="mr-2 h-4 w-4" /> Send Feedback
                         </Button>
                       </div>
                     </CardContent>
                   </Card>
                 </TabsContent>
 
-                {/* Submission Tab */}
                 <TabsContent value="submission">
                   <Card>
-                    <CardHeader>
-                      <CardTitle>Submission Content</CardTitle>
-                      <CardDescription>
-                        Review the candidate's work
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-6">
-                        <div>
-                          <h3 className="mb-2 text-sm font-medium">Step Instructions</h3>
-                          <div className="rounded-lg border p-4">
-                            <p className="whitespace-pre-wrap">
-                              {currentSubmission.step.type === 'AI_CHAT' 
-                                ? 'AI Conversation Assessment'
-                                : 'Review the candidate\'s submission below'}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div>
-                          <h3 className="mb-2 text-sm font-medium">Candidate's Response</h3>
-                          <div className="rounded-lg border p-4">
-                            {currentSubmission.step.type === 'AI_CHAT' ? (
-                              <div className="space-y-4">
-                                {currentSubmission.content.messages?.map((msg: any, index: number) => (
-                                  <div
-                                    key={index}
-                                    className={`rounded-lg p-3 ${
-                                      msg.role === 'user'
-                                        ? 'bg-primary/10 ml-8'
-                                        : 'bg-muted mr-8'
-                                    }`}
-                                  >
-                                    <p className="whitespace-pre-wrap">{msg.content}</p>
-                                  </div>
-                                ))}
+                    <CardHeader><CardTitle>Review Content</CardTitle></CardHeader>
+                    <CardContent className="space-y-4">
+                        {currentSubmission.step.type === 'AI_CHAT' ? (
+                          <div className="space-y-4">
+                            {currentSubmission.content.messages?.map((msg: any, idx: number) => (
+                              <div key={idx} className={cn("p-3 rounded-lg text-sm", msg.role === 'user' ? "bg-primary/10 ml-8" : "bg-muted mr-8")}>
+                                <p className="font-semibold text-[10px] uppercase mb-1">{msg.role}</p>
+                                <p className="whitespace-pre-wrap">{msg.content}</p>
                               </div>
-                            ) : currentSubmission.step.type === 'CODE_REVIEW' ? (
-                              <pre className="whitespace-pre-wrap font-mono text-sm">
-                                {currentSubmission.content.code || 'No code submitted'}
-                              </pre>
-                            ) : (
-                              <p className="whitespace-pre-wrap">
-                                {currentSubmission.content.document || 'No document submitted'}
-                              </p>
-                            )}
+                            ))}
                           </div>
-                        </div>
-
-                        {currentSubmission.aiFeedback && (
-                          <div>
-                            <h3 className="mb-2 text-sm font-medium">AI Analysis</h3>
-                            <div className="rounded-lg border p-4">
-                              <pre className="whitespace-pre-wrap text-sm">
-                                {JSON.stringify(currentSubmission.aiFeedback, null, 2)}
-                              </pre>
-                            </div>
+                        ) : (
+                          <div className="rounded-lg border p-4 bg-muted/20">
+                             <pre className="whitespace-pre-wrap text-sm font-mono">{JSON.stringify(currentSubmission.content, null, 2)}</pre>
                           </div>
                         )}
-                      </div>
                     </CardContent>
                   </Card>
                 </TabsContent>
 
-                {/* Evaluation Tab */}
                 <TabsContent value="evaluation">
                   <Card>
-                    <CardHeader>
-                      <CardTitle>Manual Evaluation</CardTitle>
-                      <CardDescription>
-                        Score the candidate based on the rubric
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-6">
-                        {ratings.map((criteria, index) => (
-                          <div key={index} className="space-y-3">
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <h3 className="font-medium">{criteria.name}</h3>
-                                <p className="text-sm text-muted-foreground">
-                                  {criteria.description}
-                                </p>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-lg font-bold">
-                                  {criteria.score?.toFixed(0) || '--'}%
-                                </span>
-                                <span className="text-sm text-muted-foreground">
-                                  Weight: {(criteria.weight * 100).toFixed(0)}%
-                                </span>
-                              </div>
-                            </div>
-                            
-                            <div className="space-y-2">
-                              <Slider
-                                value={[criteria.score || 0]}
-                                onValueChange={([value]) => {
-                                  const newRatings = [...ratings]
-                                  newRatings[index].score = value
-                                  setRatings(newRatings)
-                                }}
-                                max={100}
-                                step={5}
-                                className="w-full"
-                              />
-                              <div className="flex justify-between text-xs text-muted-foreground">
-                                <span>Poor</span>
-                                <span>Average</span>
-                                <span>Excellent</span>
-                              </div>
-                            </div>
-
-                            <Textarea
-                              placeholder="Add specific feedback for this criteria..."
-                              value={criteria.feedback || ''}
-                              onChange={(e) => {
-                                const newRatings = [...ratings]
-                                newRatings[index].feedback = e.target.value
-                                setRatings(newRatings)
-                              }}
-                              rows={2}
-                            />
-                          </div>
-                        ))}
-
-                        <div className="rounded-lg border p-4">
+                    <CardHeader><CardTitle>Manual Rubric</CardTitle></CardHeader>
+                    <CardContent className="space-y-8">
+                      {ratings.map((criteria, index) => (
+                        <div key={index} className="space-y-4">
                           <div className="flex items-center justify-between">
-                            <div>
-                              <h3 className="font-medium">Overall Score</h3>
-                              <p className="text-sm text-muted-foreground">
-                                Weighted average of all criteria
-                              </p>
-                            </div>
-                            <div className="text-right">
-                              <div className={`text-3xl font-bold ${getScoreColor(overallScore)}`}>
-                                {overallScore.toFixed(1)}%
-                              </div>
-                              <div className="text-sm text-muted-foreground">
-                                Based on rubric evaluation
-                              </div>
-                            </div>
+                            <Label className="font-bold">{criteria.name}</Label>
+                            <Badge variant="secondary">{criteria.score || 0}%</Badge>
                           </div>
-                          <Progress value={overallScore} className="mt-4 h-2" />
+                          {/* Fixed Slider Syntax and ([value]) error */}
+                          <Slider
+                            value={[criteria.score || 0]}
+                            onValueChange={([val]) => {
+                              const newRatings = [...ratings]
+                              newRatings[index].score = val
+                              setRatings(newRatings)
+                            }}
+                            max={100}
+                            step={5}
+                          />
+                          <Textarea 
+                            placeholder="Comments..." 
+                            value={criteria.feedback || ''}
+                            onChange={(e) => {
+                              const newRatings = [...ratings]
+                              newRatings[index].feedback = e.target.value
+                              setRatings(newRatings)
+                            }}
+                          />
                         </div>
-
-                        <div className="flex justify-end gap-2">
-                          <Button variant="outline">Save Draft</Button>
-                          <Button>Submit Evaluation</Button>
-                        </div>
+                      ))}
+                      <div className="border-t pt-6">
+                         <div className="flex justify-between items-center mb-2">
+                           <span className="font-bold">Total Score:</span>
+                           <span className="text-2xl font-black">{overallScore.toFixed(1)}%</span>
+                         </div>
+                         <Progress value={overallScore} className="h-3" />
                       </div>
+                      <div className="flex justify-end gap-2">
+                         <Button variant="outline">Save Progress</Button>
+                         <Button>Finalize Grade</Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+                
+                <TabsContent value="feedback">
+                  <Card>
+                    <CardContent className="p-12">
+                      <EmptyState icon={MessageSquare} title="Feedback History" description="No previous messages found." />
                     </CardContent>
                   </Card>
                 </TabsContent>
@@ -751,79 +580,33 @@ const CandidateEvaluation: React.FC = () => {
             ) : (
               <Card>
                 <CardContent className="p-12">
-                  <EmptyState
-                    icon={Eye}
-                    title="Select a Candidate"
-                    description="Choose a candidate from the list to begin evaluation"
-                  />
+                  <EmptyState icon={Eye} title="Select a Candidate" description="Choose a candidate from the left panel to begin." />
                 </CardContent>
               </Card>
             )}
           </div>
         </div>
 
-        {/* Feedback Dialog */}
         <Dialog open={showFeedbackDialog} onOpenChange={setShowFeedbackDialog}>
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
-              <DialogTitle>Send Feedback to Candidate</DialogTitle>
-              <DialogDescription>
-                Provide constructive feedback that will be sent to the candidate
-              </DialogDescription>
+              <DialogTitle>Direct Feedback</DialogTitle>
+              <DialogDescription>Sent to the candidate's dashboard.</DialogDescription>
             </DialogHeader>
-            
-            <div className="space-y-4">
+            <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="feedback">Feedback Message</Label>
-                <Textarea
-                  id="feedback"
-                  placeholder="Enter your feedback here..."
-                  value={feedback}
-                  onChange={(e) => setFeedback(e.target.value)}
-                  rows={6}
-                />
+                <Label>Message</Label>
+                <Textarea value={feedback} onChange={(e) => setFeedback(e.target.value)} rows={6} />
               </div>
-              
               <div className="flex items-center justify-between rounded-lg border p-4">
-                <div className="flex items-center gap-2">
-                  <Switch id="include-score" />
-                  <Label htmlFor="include-score" className="cursor-pointer">
-                    Include overall score
-                  </Label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Switch id="allow-response" />
-                  <Label htmlFor="allow-response" className="cursor-pointer">
-                    Allow candidate response
-                  </Label>
-                </div>
+                <Label>Include Score</Label>
+                <Switch id="include-score" />
               </div>
             </div>
-            
             <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setShowFeedbackDialog(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={() => {
-                  if (currentSubmission) {
-                    sendFeedbackMutation.mutate({
-                      submissionId: currentSubmission.id,
-                      feedback
-                    })
-                  }
-                }}
-                disabled={!feedback.trim() || sendFeedbackMutation.isPending}
-              >
-                {sendFeedbackMutation.isPending ? 'Sending...' : (
-                  <>
-                    <Send className="mr-2 h-4 w-4" />
-                    Send Feedback
-                  </>
-                )}
+              <Button variant="outline" onClick={() => setShowFeedbackDialog(false)}>Cancel</Button>
+              <Button onClick={() => currentSubmission && sendFeedbackMutation.mutate({ submissionId: currentSubmission.id, feedback })} disabled={!feedback.trim() || sendFeedbackMutation.isPending}>
+                {sendFeedbackMutation.isPending ? 'Sending...' : 'Send Now'}
               </Button>
             </DialogFooter>
           </DialogContent>
