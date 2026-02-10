@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const axios = require('axios');
+const { body } = require('express-validator');
 const multer = require('multer');
 const path = require('path');
+const AIController = require('../controllers/ai.controller');
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -16,432 +17,42 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// Helper function to call AI API (Groq, OpenAI, or Anthropic)
-async function callAI(prompt, systemMessage = 'You are a helpful AI assistant.') {
-  try {
-    // Try Groq first (free and fast)
-    if (process.env.GROQ_API_KEY) {
-      const response = await axios.post(
-        'https://api.groq.com/openai/v1/chat/completions',
-        {
-          model: 'mixtral-8x7b-32768',
-          messages: [
-            { role: 'system', content: systemMessage },
-            { role: 'user', content: prompt },
-          ],
-          temperature: 0.7,
-          max_tokens: 2000,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      return response.data.choices[0].message.content;
-    }
+// Validation middleware
+const evaluateValidation = [
+  body('submission').notEmpty().withMessage('Submission is required'),
+  body('rubric').optional().isObject().withMessage('Rubric must be an object')
+];
 
-    // Fallback to OpenAI
-    if (process.env.OPENAI_API_KEY) {
-      const response = await axios.post(
-        'https://api.openai.com/v1/chat/completions',
-        {
-          model: 'gpt-3.5-turbo',
-          messages: [
-            { role: 'system', content: systemMessage },
-            { role: 'user', content: prompt },
-          ],
-          temperature: 0.7,
-          max_tokens: 2000,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      return response.data.choices[0].message.content;
-    }
+const generateQuestionsValidation = [
+  body('jobTitle').notEmpty().withMessage('Job title is required'),
+  body('difficulty').optional().isIn(['easy', 'medium', 'hard']).withMessage('Invalid difficulty'),
+  body('count').optional().isInt({ min: 1, max: 20 }).withMessage('Count must be between 1 and 20')
+];
 
-    // Fallback to Anthropic Claude
-    if (process.env.ANTHROPIC_API_KEY) {
-      const response = await axios.post(
-        'https://api.anthropic.com/v1/messages',
-        {
-          model: 'claude-3-sonnet-20240229',
-          max_tokens: 2000,
-          messages: [{ role: 'user', content: prompt }],
-        },
-        {
-          headers: {
-            'x-api-key': process.env.ANTHROPIC_API_KEY,
-            'anthropic-version': '2023-06-01',
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      return response.data.content[0].text;
-    }
+const careerAdviceValidation = [
+  body('skills').isArray().withMessage('Skills must be an array'),
+  body('experience').notEmpty().withMessage('Experience is required'),
+  body('goals').notEmpty().withMessage('Goals are required')
+];
 
-    throw new Error('No AI API key configured');
-  } catch (error) {
-    console.error('AI API error:', error.response?.data || error.message);
-    throw error;
-  }
-}
+const chatValidation = [
+  body('query').notEmpty().withMessage('Query is required')
+];
 
-/**
- * @route   POST /api/ai/evaluate
- * @desc    Evaluate candidate submission with AI
- * @access  Private (Employer/Admin)
- */
-router.post('/evaluate', async (req, res) => {
-  try {
-    const { submission, rubric, expectedOutput } = req.body;
+const feedbackValidation = [
+  body('question').notEmpty().withMessage('Question is required'),
+  body('answer').notEmpty().withMessage('Answer is required'),
+  body('questionType').optional().isIn(['TECHNICAL', 'BEHAVIORAL', 'SITUATIONAL']).withMessage('Invalid question type')
+];
 
-    const prompt = `
-You are an expert evaluator. Evaluate the following candidate submission:
-
-SUBMISSION:
-${JSON.stringify(submission, null, 2)}
-
-EVALUATION RUBRIC:
-${JSON.stringify(rubric, null, 2)}
-
-${expectedOutput ? `EXPECTED OUTPUT:\n${JSON.stringify(expectedOutput, null, 2)}` : ''}
-
-Provide a detailed evaluation with:
-1. Overall score (0-100)
-2. Technical accuracy score (0-100)
-3. Code quality score (0-100) if applicable
-4. Communication score (0-100)
-5. Detailed feedback
-6. Strengths (array of strings)
-7. Areas for improvement (array of strings)
-8. Recommendations (array of strings)
-
-Return as JSON object.
-    `;
-
-    const aiResponse = await callAI(
-      prompt,
-      'You are an expert technical evaluator and HR specialist.'
-    );
-
-    const evaluation = JSON.parse(aiResponse);
-
-    res.json({
-      success: true,
-      evaluation,
-    });
-  } catch (error) {
-    console.error('AI evaluation error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to evaluate submission',
-      error: error.message,
-    });
-  }
-});
-
-/**
- * @route   POST /api/ai/generate-questions
- * @desc    Generate assessment questions using AI
- * @access  Private (Employer/Admin)
- */
-router.post('/generate-questions', async (req, res) => {
-  try {
-    const { jobTitle, difficulty = 'medium', count = 5, skills = [] } = req.body;
-
-    const prompt = `
-Generate ${count} interview questions for a ${jobTitle} position.
-
-Difficulty level: ${difficulty}
-Required skills: ${skills.join(', ')}
-
-For each question, provide:
-1. questionText: The question itself
-2. questionType: "TECHNICAL", "BEHAVIORAL", or "SITUATIONAL"
-3. difficulty: "EASY", "MEDIUM", or "HARD"
-4. expectedKeywords: Array of key terms expected in good answers
-5. evaluationCriteria: What to look for in the answer
-6. sampleAnswer: A good example answer
-
-Return as JSON array of ${count} questions.
-    `;
-
-    const aiResponse = await callAI(
-      prompt,
-      'You are an expert HR specialist and technical interviewer.'
-    );
-
-    const questions = JSON.parse(aiResponse);
-
-    res.json({
-      success: true,
-      questions,
-    });
-  } catch (error) {
-    console.error('Question generation error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to generate questions',
-      error: error.message,
-    });
-  }
-});
-
-/**
- * @route   POST /api/ai/career-advice
- * @desc    Get personalized career advice
- * @access  Private (Candidate)
- */
-router.post('/career-advice', async (req, res) => {
-  try {
-    const { skills, experience, goals, assessmentResults } = req.body;
-
-    const prompt = `
-Provide personalized career advice for a candidate with:
-
-SKILLS: ${skills.join(', ')}
-EXPERIENCE: ${experience}
-CAREER GOALS: ${goals}
-RECENT ASSESSMENT RESULTS: ${JSON.stringify(assessmentResults, null, 2)}
-
-Provide:
-1. Career path recommendations
-2. Skills to develop
-3. Learning resources
-4. Job market insights
-5. Salary expectations
-6. Next steps
-
-Return as JSON object.
-    `;
-
-    const aiResponse = await callAI(
-      prompt,
-      'You are an expert career counselor and industry analyst.'
-    );
-
-    const advice = JSON.parse(aiResponse);
-
-    res.json({
-      success: true,
-      advice,
-    });
-  } catch (error) {
-    console.error('Career advice error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to generate career advice',
-      error: error.message,
-    });
-  }
-});
-
-/**
- * @route   POST /api/ai/analyze-interview
- * @desc    Analyze mock interview recording
- * @access  Private (Candidate)
- */
-router.post('/analyze-interview', upload.single('audio'), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({
-        success: false,
-        message: 'No audio file provided',
-      });
-    }
-
-    // In production, you would:
-    // 1. Transcribe audio using Whisper API or similar
-    // 2. Analyze the transcript with AI
-
-    // Mock response for now
-    const analysis = {
-      transcript: 'Mock transcript of the interview...',
-      overallScore: 75,
-      communicationScore: 80,
-      technicalScore: 70,
-      confidenceScore: 75,
-      feedback: 'Good communication skills. Consider providing more specific examples.',
-      strengths: ['Clear communication', 'Good structure'],
-      improvements: ['More technical depth', 'Specific examples'],
-      recommendations: [
-        'Practice STAR method for behavioral questions',
-        'Review technical concepts',
-      ],
-    };
-
-    res.json({
-      success: true,
-      analysis,
-    });
-  } catch (error) {
-    console.error('Interview analysis error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to analyze interview',
-      error: error.message,
-    });
-  }
-});
-
-/**
- * @route   POST /api/ai/chat
- * @desc    AI chatbot for questions
- * @access  Private
- */
-router.post('/chat', async (req, res) => {
-  try {
-    const { query, context } = req.body;
-
-    const prompt = context
-      ? `Context: ${context}\n\nQuestion: ${query}`
-      : query;
-
-    const aiResponse = await callAI(
-      prompt,
-      'You are a helpful AI assistant for a talent assessment platform. Provide clear, concise, and accurate answers.'
-    );
-
-    res.json({
-      success: true,
-      answer: aiResponse,
-      followUpQuestions: [
-        'Can you explain more about this?',
-        'What are the best practices?',
-        'How can I improve?',
-      ],
-    });
-  } catch (error) {
-    console.error('AI chat error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to get AI response',
-      error: error.message,
-    });
-  }
-});
-
-/**
- * @route   POST /api/ai/feedback
- * @desc    Get AI feedback on answer
- * @access  Private
- */
-router.post('/feedback', async (req, res) => {
-  try {
-    const { question, answer, questionType } = req.body;
-
-    const prompt = `
-Evaluate this answer:
-
-QUESTION: ${question}
-QUESTION TYPE: ${questionType}
-CANDIDATE ANSWER: ${answer}
-
-Provide:
-1. score: 0-100
-2. feedback: Detailed feedback
-3. suggestions: Array of improvement suggestions
-4. isCorrect: boolean (for technical questions)
-
-Return as JSON object.
-    `;
-
-    const aiResponse = await callAI(
-      prompt,
-      'You are an expert evaluator providing constructive feedback.'
-    );
-
-    const feedback = JSON.parse(aiResponse);
-
-    res.json({
-      success: true,
-      ...feedback,
-    });
-  } catch (error) {
-    console.error('Feedback error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to generate feedback',
-      error: error.message,
-    });
-  }
-});
-
-/**
- * @route   POST /api/ai/analyze-image
- * @desc    Analyze image (OCR, diagram analysis)
- * @access  Private
- */
-router.post('/analyze-image', upload.single('image'), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({
-        success: false,
-        message: 'No image file provided',
-      });
-    }
-
-    // In production, use OCR service or vision AI
-    // For now, return mock data
-    const analysis = {
-      text: 'Extracted text from image...',
-      analysis: 'This appears to be a code snippet or diagram...',
-      confidence: 0.85,
-    };
-
-    res.json({
-      success: true,
-      ...analysis,
-    });
-  } catch (error) {
-    console.error('Image analysis error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to analyze image',
-      error: error.message,
-    });
-  }
-});
-
-/**
- * @route   POST /api/ai/speech-to-text
- * @desc    Convert speech to text
- * @access  Private
- */
-router.post('/speech-to-text', upload.single('audio'), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({
-        success: false,
-        message: 'No audio file provided',
-      });
-    }
-
-    // In production, use Whisper API or similar
-    // For now, return mock data
-    const result = {
-      text: 'Transcribed text from audio...',
-      confidence: 0.92,
-    };
-
-    res.json({
-      success: true,
-      ...result,
-    });
-  } catch (error) {
-    console.error('Speech to text error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to convert speech to text',
-      error: error.message,
-    });
-  }
-});
+// Routes - All 8 AI Endpoints
+router.post('/evaluate', evaluateValidation, AIController.evaluateSubmission);
+router.post('/generate-questions', generateQuestionsValidation, AIController.generateQuestions);
+router.post('/career-advice', careerAdviceValidation, AIController.getCareerAdvice);
+router.post('/analyze-interview', upload.single('audio'), AIController.analyzeInterview);
+router.post('/chat', chatValidation, AIController.chatWithAI);
+router.post('/feedback', feedbackValidation, AIController.getFeedback);
+router.post('/analyze-image', upload.single('image'), AIController.analyzeImage);
+router.post('/speech-to-text', upload.single('audio'), AIController.speechToText);
 
 module.exports = router;

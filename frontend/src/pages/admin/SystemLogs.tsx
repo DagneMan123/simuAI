@@ -75,15 +75,14 @@ const SystemLogs: React.FC = () => {
     },
   })
 
-  // Mock system metrics
-  const systemMetrics: SystemMetric[] = [
-    { name: 'CPU Usage', value: 45, unit: '%', status: 'healthy', trend: 'stable' },
-    { name: 'Memory Usage', value: 68, unit: '%', status: 'warning', trend: 'up' },
-    { name: 'Disk Usage', value: 82, unit: '%', status: 'warning', trend: 'up' },
-    { name: 'Database Connections', value: 24, unit: '', status: 'healthy', trend: 'stable' },
-    { name: 'API Response Time', value: 128, unit: 'ms', status: 'healthy', trend: 'down' },
-    { name: 'Error Rate', value: 0.2, unit: '%', status: 'healthy', trend: 'stable' },
-  ]
+  // Fetch system metrics from API
+  const { data: systemMetrics, isLoading: metricsLoading } = useQuery({
+    queryKey: ['system-metrics'],
+    queryFn: async () => {
+      const response = await api.get('/admin/system-metrics')
+      return response.data.metrics as SystemMetric[]
+    },
+  })
 
   const getLevelBadge = (level: string) => {
     switch (level) {

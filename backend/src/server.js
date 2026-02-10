@@ -174,14 +174,14 @@ process.on('SIGTERM', async () => {
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`
-  🚀 AI-Hire Backend Server Started!
+   AI-Hire Backend Server Started!
   ===================================
-  📍 Port: ${PORT}
-  🌍 Environment: ${process.env.NODE_ENV}
-  🗄️  Database: PostgreSQL (Connected)
-  📊 API: http://localhost:${PORT}/api
-  📚 Docs: http://localhost:${PORT}/api/docs
-  🔌 WebSocket: Ready
+   Port: ${PORT}
+   Environment: ${process.env.NODE_ENV}
+    Database: PostgreSQL (Connected)
+   API: http://localhost:${PORT}/api
+   Docs: http://localhost:${PORT}/api/docs
+   WebSocket: Ready
   ===================================
   `);
 });

@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
+import { api } from '@/lib/api';
 
 interface PaymentPlan {
   id: string;
@@ -63,23 +64,22 @@ const ChapaPayment: React.FC = () => {
     setLoading(true);
 
     try {
-      // Logic: Call your Backend API here
-      // The backend will communicate with Chapa and return a checkout_url
-      /*
-      const response = await api.post('/payments/initialize', { planId: selectedPlan });
-      if (response.data.checkout_url) {
-         window.location.href = response.data.checkout_url;
-      }
-      */
+      // Call Backend API to initialize payment with Chapa
+      const response = await api.post('/payment/initialize', { 
+        planId: selectedPlan,
+        amount: selectedPlanData.price,
+        credits: selectedPlanData.credits
+      });
       
-      // Temporary Mock for UI demonstration
-      setTimeout(() => {
-        console.log("Redirecting to Chapa...");
-        setLoading(false);
-      }, 1500);
-
+      if (response.data.checkout_url) {
+        // Redirect to Chapa payment page
+        window.location.href = response.data.checkout_url;
+      } else {
+        throw new Error('No checkout URL received');
+      }
     } catch (error) {
       console.error("Payment initialization failed", error);
+      alert('Failed to initialize payment. Please try again.');
       setLoading(false);
     }
   };

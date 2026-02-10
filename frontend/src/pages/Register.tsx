@@ -71,7 +71,7 @@ const Register: React.FC = () => {
 
     setLoading(true);
     try {
-      const response = await authApi.register({
+      await authApi.register({
         email: formData.email,
         password: formData.password,
         firstName: formData.firstName,
@@ -128,40 +128,40 @@ const Register: React.FC = () => {
   const strengthColors = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-green-500'];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/40 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/40 flex items-center justify-center p-4 sm:p-6 lg:p-8">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-2xl"
+        className="w-full max-w-2xl mx-auto"
       >
-        <Card className="p-8 shadow-2xl border-slate-200/60 bg-white/95 backdrop-blur-sm">
+        <Card className="p-6 sm:p-8 shadow-2xl border-slate-200/60 bg-white/95 backdrop-blur-sm">
           {/* Logo */}
-          <div className="flex justify-center mb-6">
+          <div className="flex justify-center mb-4 sm:mb-6">
             <div className="flex items-center space-x-2">
-              <Brain className="w-10 h-10 text-indigo-600" />
-              <span className="text-3xl font-bold bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent">
+              <Brain className="w-8 h-8 sm:w-10 sm:h-10 text-indigo-600" />
+              <span className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent">
                 SimuAI
               </span>
             </div>
           </div>
 
           {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-slate-900 mb-2">Create Your Account</h1>
-            <p className="text-slate-600">Join thousands of professionals using SimuAI</p>
+          <div className="text-center mb-6 sm:mb-8">
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 mb-2">Create Your Account</h1>
+            <p className="text-sm sm:text-base text-slate-600">Join thousands of professionals using SimuAI</p>
           </div>
 
           {/* Role Selection */}
-          <div className="mb-8">
-            <Label className="mb-3 block">I am a...</Label>
-            <div className="grid grid-cols-2 gap-4">
+          <div className="mb-6 sm:mb-8">
+            <Label className="mb-3 block text-sm sm:text-base">I am a...</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               {roles.map((role) => (
                 <button
                   key={role.value}
                   type="button"
                   onClick={() => setSelectedRole(role.value)}
-                  className={`p-4 border-2 rounded-lg text-left transition-all ${
+                  className={`p-3 sm:p-4 border-2 rounded-lg text-left transition-all ${
                     selectedRole === role.value
                       ? 'border-indigo-600 bg-indigo-50 shadow-lg shadow-indigo-500/20'
                       : 'border-slate-200 hover:border-slate-300 hover:shadow-md'
@@ -170,8 +170,8 @@ const Register: React.FC = () => {
                   <div className={`mb-2 ${selectedRole === role.value ? 'text-indigo-600' : 'text-slate-600'}`}>
                     {role.icon}
                   </div>
-                  <div className="font-semibold text-slate-900 mb-1">{role.label}</div>
-                  <div className="text-sm text-slate-600">{role.description}</div>
+                  <div className="font-semibold text-slate-900 mb-1 text-sm sm:text-base">{role.label}</div>
+                  <div className="text-xs sm:text-sm text-slate-600">{role.description}</div>
                 </button>
               ))}
             </div>
@@ -180,7 +180,7 @@ const Register: React.FC = () => {
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Name Fields */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
                 <Label htmlFor="firstName">First Name</Label>
                 <Input

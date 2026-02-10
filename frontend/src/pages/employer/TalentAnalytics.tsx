@@ -84,61 +84,32 @@ const TalentAnalytics: React.FC = () => {
   const [activeChart, setActiveChart] = useState('bar')
   const [simulationFilter, setSimulationFilter] = useState('all')
 
-  const { refetch, isFetching } = useQuery({
+  const { refetch, isFetching, data: analyticsData } = useQuery({
     queryKey: ['analyticsData', timeRange, simulationFilter],
-    queryFn: () => simulationApi.getSimulations(),
-    enabled: false,
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        timeRange,
+        simulation: simulationFilter
+      })
+      const response = await simulationApi.getAnalytics(`?${params}`)
+      return response.data
+    },
   })
 
-  // Mock data
-  const performanceData: AnalyticsData[] = [
-    { date: 'Jan', candidates: 12, avgScore: 72, completionRate: 85, shortlisted: 4 },
-    { date: 'Feb', candidates: 18, avgScore: 75, completionRate: 82, shortlisted: 6 },
-    { date: 'Mar', candidates: 24, avgScore: 78, completionRate: 88, shortlisted: 8 },
-    { date: 'Apr', candidates: 30, avgScore: 82, completionRate: 85, shortlisted: 10 },
-    { date: 'May', candidates: 28, avgScore: 85, completionRate: 90, shortlisted: 12 },
-    { date: 'Jun', candidates: 35, avgScore: 88, completionRate: 92, shortlisted: 15 },
-  ]
-
-  const diversityData: DiversityData[] = [
-    { category: 'Women', count: 42, percentage: 42, target: 50 },
-    { category: 'Underrepresented Groups', count: 28, percentage: 28, target: 30 },
-    { category: 'Veterans', count: 8, percentage: 8, target: 10 },
-    { category: 'People with Disabilities', count: 12, percentage: 12, target: 15 },
-  ]
-
-  const skillGaps: SkillGap[] = [
-    { skill: 'React/TypeScript', currentLevel: 65, requiredLevel: 85, gap: 20, priority: 'high' },
-    { skill: 'Cloud Architecture', currentLevel: 45, requiredLevel: 75, gap: 30, priority: 'high' },
-    { skill: 'DevOps', currentLevel: 55, requiredLevel: 70, gap: 15, priority: 'medium' },
-    { skill: 'System Design', currentLevel: 60, requiredLevel: 80, gap: 20, priority: 'high' },
-    { skill: 'Leadership', currentLevel: 70, requiredLevel: 75, gap: 5, priority: 'low' },
-  ]
-
-  const pieChartData: PieChartData[] = [
-    { name: 'Senior Dev', value: 92 },
-    { name: 'Frontend', value: 88 },
-    { name: 'Backend', value: 85 },
-    { name: 'DevOps', value: 78 },
-    { name: 'Full Stack', value: 90 },
-  ]
-
-  const hiringMetrics = {
-    timeToHire: 24,
-    costPerHire: 8500,
-    qualityOfHire: 8.5,
-    offerAcceptanceRate: 85,
-    candidateExperience: 4.2,
-    diversityScore: 7.8
+  // Use actual data from API
+  const performanceData = analyticsData?.performanceData || []
+  const diversityData = analyticsData?.diversityData || []
+  const skillGaps = analyticsData?.skillGaps || []
+  const pieChartData = analyticsData?.pieChartData || []
+  const hiringMetrics = analyticsData?.hiringMetrics || {
+    timeToHire: 0,
+    costPerHire: 0,
+    qualityOfHire: 0,
+    offerAcceptanceRate: 0,
+    candidateExperience: 0,
+    diversityScore: 0
   }
-
-  const topPerformers = [
-    { name: 'Alex Johnson', score: 95, role: 'Senior Engineer', status: 'hired' },
-    { name: 'Maria Garcia', score: 92, role: 'Full Stack Dev', status: 'shortlisted' },
-    { name: 'David Chen', score: 90, role: 'DevOps Engineer', status: 'offered' },
-    { name: 'Sarah Williams', score: 88, role: 'Frontend Lead', status: 'hired' },
-    { name: 'James Wilson', score: 87, role: 'Backend Dev', status: 'interviewing' },
-  ]
+  const topPerformers = analyticsData?.topPerformers || []
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
 

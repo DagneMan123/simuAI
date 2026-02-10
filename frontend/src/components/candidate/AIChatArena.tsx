@@ -31,35 +31,28 @@ interface Question {
 }
 
 const AIChatArena: React.FC = () => {
-  // --- Sample Data ---
-  const questions: Question[] = [
-    {
-      id: '1',
-      question: "Explain the difference between `let`, `const`, and `var` in JavaScript.",
-      type: 'text',
-      timeLimit: 5,
-      points: 10
-    },
-    {
-      id: '2',
-      question: "Write a function that reverses a string without using the built-in reverse method.",
-      type: 'coding',
-      timeLimit: 10,
-      points: 15
-    },
-    {
-      id: '3',
-      question: "Which of the following is NOT a React hook?",
-      type: 'multiple-choice',
-      options: ['useState', 'useEffect', 'useComponent', 'useContext'],
-      correctAnswer: 'useComponent',
-      timeLimit: 2,
-      points: 5
-    }
-  ];
+  // Remove sample questions - they should come from the simulation data via API
+  // Questions will be loaded from the backend when the simulation starts
 
-  // --- State Management ---
-  const [messages, setMessages] = useState<Message[]>([
+  // Fetch questions from API based on simulation
+  const [questions, setQuestions] = useState<Question[]>([]);
+  
+  // Load questions when component mounts
+  useEffect(() => {
+    const loadQuestions = async () => {
+      try {
+        // Replace with actual API call to get simulation questions
+        // const response = await api.get(`/simulations/${simulationId}/questions`);
+        // setQuestions(response.data);
+        
+        // For now, initialize empty until API is called
+        setQuestions([]);
+      } catch (error) {
+        console.error('Failed to load questions:', error);
+      }
+    };
+    loadQuestions();
+  }, []);
     {
       id: '1',
       content: "Hello! I'm your AI interviewer. Are you ready to begin the Frontend Developer assessment?",

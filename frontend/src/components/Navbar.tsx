@@ -53,15 +53,15 @@ const Navbar: React.FC = () => {
 
   return (
     <nav className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex h-14 sm:h-16 items-center justify-between">
           {/* Logo */}
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-purple-600">
-                <Briefcase className="h-5 w-5 text-white" />
+              <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-purple-600">
+                <Briefcase className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
               </div>
-              <span className="text-xl font-bold gradient-text">SimuAI</span>
+              <span className="text-lg sm:text-xl font-bold gradient-text">SimuAI</span>
             </Link>
           </div>
 
@@ -79,7 +79,7 @@ const Navbar: React.FC = () => {
           </div>
 
           {/* User Actions */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4">
             {/* Theme Toggle */}
             <Button
               variant="ghost"
@@ -103,7 +103,7 @@ const Navbar: React.FC = () => {
 
             {user ? (
               <>
-                <div className="hidden md:block">
+                <div className="hidden lg:block">
                   <span className="text-sm text-muted-foreground">
                     Welcome, {user.firstName}!
                   </span>
@@ -141,7 +141,7 @@ const Navbar: React.FC = () => {
                 </DropdownMenu>
               </>
             ) : (
-              <div className="flex items-center space-x-2">
+              <div className="hidden sm:flex items-center space-x-2">
                 <Button asChild variant="ghost" size="sm">
                   <Link to="/login">Login</Link>
                 </Button>

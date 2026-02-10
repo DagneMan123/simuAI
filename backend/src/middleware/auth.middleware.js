@@ -4,61 +4,74 @@ const jwt = require('jsonwebtoken');
  * Authentication Middleware
  * Verifies JWT token and attaches user to request
  */
-const authenticate = (allowedRoles = []) => {
-  return async (req, res, next) => {
-    try {
-      // Get token from header
-      const authHeader = req.headers.authorization;
-      
-      if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({
-          success: false,
-          message: 'No token provided. Authorization denied.',
-        });
-      }
-
-      const token = authHeader.substring(7); // Remove 'Bearer ' prefix
-
-      // Verify token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-      // Check if user role is allowed
-      if (allowedRoles.length > 0 && !allowedRoles.includes(decoded.role)) {
-        return res.status(403).json({
-          success: false,
-          message: 'Access denied. Insufficient permissions.',
-        });
-      }
-
-      // Attach user to request
-      req.user = {
-        id: decoded.userId || decoded.id,
-        email: decoded.email,
-        role: decoded.role,
-      };
-
-      next();
-    } catch (error) {
-      if (error.name === 'TokenExpiredError') {
-        return res.status(401).json({
-          success: false,
-          message: 'Token expired. Please login again.',
-        });
-      }
-
-      if (error.name === 'JsonWebTokenError') {
-        return res.status(401).json({
-          success: false,
-          message: 'Invalid token. Authorization denied.',
-        });
-      }
-
-      console.error('Authentication error:', error);
-      return res.status(500).json({
+const authenticateToken = async (req, res, next) => {
+  try {
+    // Get token from header
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({
         success: false,
-        message: 'Authentication failed.',
+        message: 'No token provided. Authorization denied.',
       });
     }
+
+    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Attach user to request
+    req.user = {
+      id: decoded.userId || decoded.id,
+      email: decoded.email,
+      role: decoded.role,
+    };
+
+    next();
+  } catch (error) {
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({
+        success: false,
+        message: 'Token expired. Please login again.',
+      });
+    }
+
+    if (error.name === 'JsonWebTokenError') {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid token. Authorization denied.',
+      });
+    }
+
+    console.error('Authentication error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Authentication failed.',
+    });
+  }
+};
+
+/**
+ * Role-based access control middleware
+ */
+const requireRole = (allowedRoles = []) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Authentication required.',
+      });
+    }
+
+    if (allowedRoles.length > 0 && !allowedRoles.includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Insufficient permissions.',
+      });
+    }
+
+    next();
   };
 };
 
@@ -86,6 +99,23 @@ const optionalAuth = async (req, res, next) => {
     // Continue without user if token is invalid
     next();
   }
+};
+
+/**
+ * Legacy middleware for backward compatibility
+ */
+const authenticate = (allowedRoles = []) => {
+  return async (req, res, next) => {
+    await authenticateToken(req, res, () => {
+      if (allowedRoles.length > 0 && !allowedRoles.includes(req.user.role)) {
+        return res.status(403).json({
+          success: false,
+          message: 'Access denied. Insufficient permissions.',
+        });
+      }
+      next();
+    });
+  };
 };
 
 /**
@@ -131,6 +161,8 @@ const isCandidate = (req, res, next) => {
 };
 
 module.exports = {
+  authenticateToken,
+  requireRole,
   authenticate,
   optionalAuth,
   isAdmin,

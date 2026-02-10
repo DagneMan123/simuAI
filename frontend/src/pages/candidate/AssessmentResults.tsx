@@ -72,52 +72,11 @@ const AssessmentResults: React.FC = () => {
   const { data: results, isLoading } = useQuery({
     queryKey: ['assessment-results', id],
     queryFn: async () => {
-      if (id) {
-        const response = await candidateApi.getResults(id)
-        return response.data as AssessmentResult
+      if (!id) {
+        throw new Error('Assessment ID is required')
       }
-      // Mock data for demonstration
-      return {
-        id: '1',
-        simulationId: 'sim-123',
-        simulationTitle: 'Senior Software Engineer Assessment',
-        companyName: 'TechCorp Inc.',
-        completedAt: new Date().toISOString(),
-        timeSpent: 45 * 60, // 45 minutes in seconds
-        overallScore: 85,
-        status: 'passed',
-        detailedFeedback: 'Excellent performance demonstrating strong technical skills and problem-solving abilities. Your communication during the system design discussion was particularly impressive.',
-        skillBreakdown: [
-          { skill: 'Technical Skills', score: 92, feedback: 'Strong understanding of algorithms and data structures' },
-          { skill: 'Problem Solving', score: 88, feedback: 'Effective approach to complex problems' },
-          { skill: 'Communication', score: 82, feedback: 'Clear and articulate explanations' },
-          { skill: 'System Design', score: 90, feedback: 'Well-structured and scalable solutions' },
-          { skill: 'Code Quality', score: 78, feedback: 'Good practices with room for improvement in testing' },
-        ],
-        aiFeedback: {
-          strengths: [
-            'Strong algorithmic thinking',
-            'Clear communication style',
-            'Good system design intuition',
-            'Adaptable problem-solving approach'
-          ],
-          areasForImprovement: [
-            'Could improve test coverage',
-            'Consider edge cases more thoroughly',
-            'Documentation could be more detailed'
-          ],
-          recommendations: [
-            'Practice more complex system design problems',
-            'Work on writing comprehensive tests',
-            'Review design patterns for common problems'
-          ]
-        },
-        comparisonData: {
-          averageScore: 72,
-          percentile: 85,
-          topSkills: ['System Design', 'Algorithms', 'Communication']
-        }
-      } as AssessmentResult
+      const response = await candidateApi.getResults(id)
+      return response.data as AssessmentResult
     },
   })
 

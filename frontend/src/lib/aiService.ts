@@ -8,7 +8,7 @@ export interface Question {
   correctAnswer?: string;
   difficulty: 'easy' | 'medium' | 'hard';
   category: string;
-  timeLimit?: number; // በሰከንድ
+  timeLimit?: number; 
   explanation?: string;
   flagged?: boolean;
 }
@@ -16,7 +16,7 @@ export interface Question {
 export interface AssessmentSession {
   id: string;
   questions: Question[];
-  timeLimit: number; // በሚሊሰከንድ
+  timeLimit: number; // 
   startedAt: string;
   expiresAt: string;
   examType: string;

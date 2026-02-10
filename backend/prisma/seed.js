@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Seeding database...');
+  console.log(' Seeding database...');
 
   // Create Admin User
   const adminPassword = await bcrypt.hash('Admin@123', 10);
@@ -20,7 +20,7 @@ async function main() {
       isVerified: true,
     },
   });
-  console.log('✅ Admin user created:', admin.email);
+  console.log('Admin user created:', admin.email);
 
   // Create Test Employer
   const employerPassword = await bcrypt.hash('Employer@123', 10);
@@ -53,19 +53,19 @@ async function main() {
       isVerified: true,
     },
   });
-  console.log('✅ Candidate user created:', candidate.email);
+  console.log(' Candidate user created:', candidate.email);
 
-  console.log('\n🎉 Seeding completed!');
-  console.log('\n📝 Test Accounts Created:');
+  console.log('\n Seeding completed!');
+  console.log('\n Test Accounts Created:');
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.log('👨‍💼 Admin Account:');
+  console.log(' Admin Account:');
   console.log('   Email: admin@simuai.com');
   console.log('   Password: Admin@123');
   console.log('   URL: http://localhost:3000/login');
-  console.log('\n🏢 Employer Account:');
+  console.log('\n Employer Account:');
   console.log('   Email: employer@simuai.com');
   console.log('   Password: Employer@123');
-  console.log('\n👤 Candidate Account:');
+  console.log('\n Candidate Account:');
   console.log('   Email: candidate@simuai.com');
   console.log('   Password: Candidate@123');
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');

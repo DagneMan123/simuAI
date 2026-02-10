@@ -72,22 +72,11 @@ const EmployerDashboard: React.FC = () => {
     }
   })
 
-  const { data: analytics } = useQuery({
+  const { data: analytics, isLoading: analyticsLoading } = useQuery({
     queryKey: ['analytics'],
     queryFn: async () => {
-      // Mock data - replace with actual API call
-      return {
-        totalCandidates: 124,
-        avgScore: 78.5,
-        completionRate: 85.2,
-        topSkills: [
-          { skill: 'Problem Solving', score: 85 },
-          { skill: 'Communication', score: 78 },
-          { skill: 'Technical Skills', score: 92 },
-          { skill: 'Teamwork', score: 70 },
-          { skill: 'Adaptability', score: 88 }
-        ]
-      } as Analytics
+      const response = await api.get('/employer/analytics')
+      return response.data as Analytics
     }
   })
 
