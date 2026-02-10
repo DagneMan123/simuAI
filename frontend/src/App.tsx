@@ -48,12 +48,10 @@ const App: React.FC = () => {
               <SocketProvider>
                 <Routes>
                   {/* Public Routes */}
-                  <Route path="/" element={<Login />} />
-                  <Route path="/login" element={<LandingPage />} />
+                  <Route path="/" element={<LandingPage />} />
+                  <Route path="/landing" element={<LandingPage />} />
+                  <Route path="/login" element={<Login />} />
                   <Route path="/register" element={<Register />} />
-                  <Route path="/demo" element={<div>Demo Page</div>} />
-                  <Route path="/features" element={<div>Features Page</div>} />
-                  <Route path="/pricing" element={<div>Pricing Page</div>} />
 
                   {/* Protected Routes */}
                   <Route path="/dashboard" element={

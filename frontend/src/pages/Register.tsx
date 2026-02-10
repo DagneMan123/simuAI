@@ -1,430 +1,398 @@
-import React, { useState } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { useAuth } from '@/contexts/AuthContext'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Loader2, Mail, Lock, User, Building, Eye, EyeOff, Briefcase } from 'lucide-react'
-
-// Define the form data type based on your AuthContext
-interface RegisterFormData {
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-  company: string;
-  role: 'EMPLOYER' | 'CANDIDATE';
-}
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { Brain, Mail, Lock, User, Building, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card } from '@/components/ui/card';
+import { authApi, apiHelpers, UserRole } from '@/lib/api';
+import { useToast } from '@/hooks/use-toast';
 
 const Register: React.FC = () => {
-  const [searchParams] = useSearchParams()
-  const defaultRole = searchParams.get('role') === 'candidate' ? 'CANDIDATE' : 'EMPLOYER'
-  
-  const [formData, setFormData] = useState<RegisterFormData>({
-    email: '',
-    password: '',
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<UserRole>('CANDIDATE');
+  const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
-    company: '',
-    role: defaultRole,
-  })
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [errors, setErrors] = useState<Record<string, string>>({})
-  const [isLoading, setIsLoading] = useState(false)
-  const [apiError, setApiError] = useState('')
+    email: '',
+    password: '',
+    confirmPassword: '',
+    company: ''
+  });
+  const [errors, setErrors] = useState<any>({});
 
-  const { register } = useAuth()
-  const navigate = useNavigate()
+  const roles = [
+    {
+      value: 'CANDIDATE' as UserRole,
+      label: 'Job Seeker',
+      description: 'Looking for opportunities and want to showcase skills',
+      icon: <User className="w-6 h-6" />
+    },
+    {
+      value: 'EMPLOYER' as UserRole,
+      label: 'Employer',
+      description: 'Hiring talent and creating assessments',
+      icon: <Building className="w-6 h-6" />
+    }
+  ];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: '' }))
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (errors[e.target.name]) {
+      setErrors({ ...errors, [e.target.name]: '' });
     }
-  }
+  };
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {}
-    
-    // Email validation
-    if (!formData.email) {
-      newErrors.email = 'Email is required'
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Invalid email address'
-    }
-    
-    // Password validation
-    if (!formData.password) {
-      newErrors.password = 'Password is required'
-    } else if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters'
-    }
-    
-    // First name validation
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = 'First name is required'
-    }
-    
-    // Last name validation
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = 'Last name is required'
-    }
-    
-    // Company validation for employers
-    if (formData.role === 'EMPLOYER' && !formData.company.trim()) {
-      newErrors.company = 'Company name is required for employers'
-    }
-    
-    // Confirm password validation
-    if (!confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password'
-    } else if (formData.password !== confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match'
-    }
-    
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+  const validate = () => {
+    const newErrors: any = {};
+    if (!formData.firstName) newErrors.firstName = 'First name is required';
+    if (!formData.lastName) newErrors.lastName = 'Last name is required';
+    if (!formData.email) newErrors.email = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email is invalid';
+    if (!formData.password) newErrors.password = 'Password is required';
+    else if (formData.password.length < 8) newErrors.password = 'Password must be at least 8 characters';
+    if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
+    if (selectedRole === 'EMPLOYER' && !formData.company) newErrors.company = 'Company name is required';
+    return newErrors;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setApiError('')
-    
-    if (!validateForm()) return
-    
-    setIsLoading(true)
-    
+    e.preventDefault();
+    const newErrors = validate();
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    setLoading(true);
     try {
-      // Prepare data for registration
-      const registrationData = {
+      const response = await authApi.register({
         email: formData.email,
         password: formData.password,
         firstName: formData.firstName,
         lastName: formData.lastName,
-        role: formData.role,
-        company: formData.role === 'EMPLOYER' ? formData.company : undefined,
-      }
-      
-      await register(registrationData)
-      navigate('/dashboard')
-    } catch (err: any) {
-      setApiError(err.message || 'Registration failed. Please try again.')
-    } finally {
-      setIsLoading(false)
-    }
-  }
+        role: selectedRole,
+        company: selectedRole === 'EMPLOYER' ? formData.company : undefined
+      });
 
-  const handleRoleChange = (role: 'EMPLOYER' | 'CANDIDATE') => {
-    setFormData(prev => ({ ...prev, role }))
-    // Clear company error if switching from employer to candidate
-    if (role === 'CANDIDATE' && errors.company) {
-      setErrors(prev => ({ ...prev, company: '' }))
+      toast({
+        title: 'Account created!',
+        description: 'Please check your email to verify your account.',
+      });
+
+      // Auto login after registration
+      const loginResponse = await authApi.login(formData.email, formData.password, selectedRole);
+      const { token, user } = loginResponse.data;
+      
+      apiHelpers.setToken(token);
+      localStorage.setItem('user', JSON.stringify(user));
+
+      // Redirect based on role
+      switch (selectedRole) {
+        case 'EMPLOYER':
+          navigate('/dashboard');
+          break;
+        case 'CANDIDATE':
+          navigate('/my-assessments');
+          break;
+        default:
+          navigate('/dashboard');
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Registration failed',
+        description: error.response?.data?.message || 'Something went wrong',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
     }
-  }
+  };
+
+  const passwordStrength = (password: string) => {
+    let strength = 0;
+    if (password.length >= 8) strength++;
+    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+    if (/\d/.test(password)) strength++;
+    if (/[^a-zA-Z\d]/.test(password)) strength++;
+    return strength;
+  };
+
+  const strength = passwordStrength(formData.password);
+  const strengthLabels = ['Weak', 'Fair', 'Good', 'Strong'];
+  const strengthColors = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-green-500'];
 
   return (
-    <div 
-      className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
-      style={{
-        // Add background image
-        backgroundImage: `url('https://www.jungmann.de/wp-content/uploads/2025/09/jst-software-leitstand-kontrollraum_1.jpg')`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        backgroundAttachment: 'fixed',
-      }}
-    >
-      {/* Dark overlay for better readability */}
-      <div className="absolute inset-0 bg-black/40" />
-      
-      {/* Optional gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-purple-900/15 to-blue-900/20" />
-      
-      {/* Top gradient bar */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-blue-400 to-blue-300 z-20" />
-      
-      <Card className="w-full max-w-2xl shadow-2xl border-0 bg-white/95 backdrop-blur-sm relative z-10">
-        <CardHeader className="space-y-1 text-center pb-6">
-          <div className="flex justify-center mb-4">
-            <div className="p-4 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg">
-              <User className="h-8 w-8 text-white" />
-            </div>
-          </div>
-          <CardTitle className="text-3xl font-bold text-gray-900">
-            Create Your Account
-          </CardTitle>
-          <CardDescription className="text-gray-600 text-lg">
-            Join SimuAI to revolutionize your hiring or career journey
-          </CardDescription>
-        </CardHeader>
-        
-        <CardContent>
-          {apiError && (
-            <Alert variant="destructive" className="mb-6">
-              <AlertDescription className="text-white">
-                {apiError}
-              </AlertDescription>
-            </Alert>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Role Selection */}
-            <div className="space-y-3">
-              <Label className="text-gray-700 font-medium text-base">I am a...</Label>
-              <div className="grid grid-cols-2 gap-4">
-                <button
-                  type="button"
-                  onClick={() => handleRoleChange('EMPLOYER')}
-                  className={`
-                    flex flex-col items-center justify-between rounded-xl border-2 p-5 transition-all
-                    ${formData.role === 'EMPLOYER' 
-                      ? 'border-blue-500 bg-blue-50' 
-                      : 'border-gray-300 bg-white hover:bg-gray-50'
-                    }
-                  `}
-                >
-                  <Building className={`h-8 w-8 mb-3 ${formData.role === 'EMPLOYER' ? 'text-blue-600' : 'text-gray-500'}`} />
-                  <span className={`font-medium ${formData.role === 'EMPLOYER' ? 'text-blue-700' : 'text-gray-700'}`}>
-                    Employer
-                  </span>
-                  <span className="text-sm text-gray-500 mt-1">Hire candidates</span>
-                </button>
-                
-                <button
-                  type="button"
-                  onClick={() => handleRoleChange('CANDIDATE')}
-                  className={`
-                    flex flex-col items-center justify-between rounded-xl border-2 p-5 transition-all
-                    ${formData.role === 'CANDIDATE' 
-                      ? 'border-blue-500 bg-blue-50' 
-                      : 'border-gray-300 bg-white hover:bg-gray-50'
-                    }
-                  `}
-                >
-                  <Briefcase className={`h-8 w-8 mb-3 ${formData.role === 'CANDIDATE' ? 'text-blue-600' : 'text-gray-500'}`} />
-                  <span className={`font-medium ${formData.role === 'CANDIDATE' ? 'text-blue-700' : 'text-gray-700'}`}>
-                    Candidate
-                  </span>
-                  <span className="text-sm text-gray-500 mt-1">Find opportunities</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Name Fields */}
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="firstName" className="text-gray-700 font-medium">
-                  First Name
-                </Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                  <Input
-                    id="firstName"
-                    name="firstName"
-                    placeholder="John"
-                    className="pl-11 h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-gray-900"
-                    value={formData.firstName}
-                    onChange={handleChange}
-                  />
-                </div>
-                {errors.firstName && (
-                  <p className="text-sm text-red-600">{errors.firstName}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="lastName" className="text-gray-700 font-medium">
-                  Last Name
-                </Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                  <Input
-                    id="lastName"
-                    name="lastName"
-                    placeholder="Doe"
-                    className="pl-11 h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-gray-900"
-                    value={formData.lastName}
-                    onChange={handleChange}
-                  />
-                </div>
-                {errors.lastName && (
-                  <p className="text-sm text-red-600">{errors.lastName}</p>
-                )}
-              </div>
-            </div>
-
-            {/* Company Field (only for employers) */}
-            {formData.role === 'EMPLOYER' && (
-              <div className="space-y-2">
-                <Label htmlFor="company" className="text-gray-700 font-medium">
-                  Company Name
-                </Label>
-                <div className="relative">
-                  <Building className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                  <Input
-                    id="company"
-                    name="company"
-                    placeholder="Your Company Inc."
-                    className="pl-11 h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-gray-900"
-                    value={formData.company}
-                    onChange={handleChange}
-                  />
-                </div>
-                {errors.company && (
-                  <p className="text-sm text-red-600">{errors.company}</p>
-                )}
-              </div>
-            )}
-
-            {/* Email Field */}
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-gray-700 font-medium">
-                Email Address
-              </Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="name@example.com"
-                  className="pl-11 h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-gray-900"
-                  value={formData.email}
-                  onChange={handleChange}
-                />
-              </div>
-              {errors.email && (
-                <p className="text-sm text-red-600">{errors.email}</p>
-              )}
-            </div>
-
-            {/* Password Fields */}
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-gray-700 font-medium">
-                  Password
-                </Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                  <Input
-                    id="password"
-                    name="password"
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="Create a password"
-                    className="pl-11 pr-11 h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-gray-900"
-                    value={formData.password}
-                    onChange={handleChange}
-                  />
-                  <button
-                    type="button"
-                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                  </button>
-                </div>
-                {errors.password && (
-                  <p className="text-sm text-red-600">{errors.password}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword" className="text-gray-700 font-medium">
-                  Confirm Password
-                </Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                  <Input
-                    id="confirmPassword"
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="Confirm your password"
-                    className="pl-11 h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-gray-900"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                  />
-                </div>
-                {errors.confirmPassword && (
-                  <p className="text-sm text-red-600">{errors.confirmPassword}</p>
-                )}
-              </div>
-            </div>
-
-            <div className="pt-2">
-              <Button 
-                type="submit" 
-                className="w-full h-12 text-base font-semibold 
-                  bg-gradient-to-r from-blue-600 to-blue-700 
-                  hover:from-blue-700 hover:to-blue-800 
-                  text-white rounded-lg
-                  disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-3 h-5 w-5 animate-spin" />
-                    Creating Account...
-                  </>
-                ) : (
-                  'Create Account'
-                )}
-              </Button>
-            </div>
-          </form>
-
-          <div className="mt-8 mb-6 relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-gray-200" />
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="bg-white px-4 text-gray-500">
-                Already have an account?
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/40 flex items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-2xl"
+      >
+        <Card className="p-8 shadow-2xl border-slate-200/60 bg-white/95 backdrop-blur-sm">
+          {/* Logo */}
+          <div className="flex justify-center mb-6">
+            <div className="flex items-center space-x-2">
+              <Brain className="w-10 h-10 text-indigo-600" />
+              <span className="text-3xl font-bold bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent">
+                SimuAI
               </span>
             </div>
           </div>
 
-          <Button 
-            asChild
-            variant="outline" 
-            className="w-full h-12 border-gray-300 hover:bg-gray-50 text-gray-700 font-medium"
-          >
-            <Link to="/login">
-              Sign In to Existing Account
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-2xl font-bold text-slate-900 mb-2">Create Your Account</h1>
+            <p className="text-slate-600">Join thousands of professionals using SimuAI</p>
+          </div>
+
+          {/* Role Selection */}
+          <div className="mb-8">
+            <Label className="mb-3 block">I am a...</Label>
+            <div className="grid grid-cols-2 gap-4">
+              {roles.map((role) => (
+                <button
+                  key={role.value}
+                  type="button"
+                  onClick={() => setSelectedRole(role.value)}
+                  className={`p-4 border-2 rounded-lg text-left transition-all ${
+                    selectedRole === role.value
+                      ? 'border-indigo-600 bg-indigo-50 shadow-lg shadow-indigo-500/20'
+                      : 'border-slate-200 hover:border-slate-300 hover:shadow-md'
+                  }`}
+                >
+                  <div className={`mb-2 ${selectedRole === role.value ? 'text-indigo-600' : 'text-slate-600'}`}>
+                    {role.icon}
+                  </div>
+                  <div className="font-semibold text-slate-900 mb-1">{role.label}</div>
+                  <div className="text-sm text-slate-600">{role.description}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Name Fields */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="firstName">First Name</Label>
+                <Input
+                  id="firstName"
+                  name="firstName"
+                  placeholder="John"
+                  value={formData.firstName}
+                  onChange={handleChange}
+                  className={errors.firstName ? 'border-red-500' : ''}
+                />
+                {errors.firstName && (
+                  <div className="flex items-center mt-1 text-sm text-red-600">
+                    <AlertCircle className="w-4 h-4 mr-1" />
+                    {errors.firstName}
+                  </div>
+                )}
+              </div>
+              <div>
+                <Label htmlFor="lastName">Last Name</Label>
+                <Input
+                  id="lastName"
+                  name="lastName"
+                  placeholder="Doe"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  className={errors.lastName ? 'border-red-500' : ''}
+                />
+                {errors.lastName && (
+                  <div className="flex items-center mt-1 text-sm text-red-600">
+                    <AlertCircle className="w-4 h-4 mr-1" />
+                    {errors.lastName}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Email */}
+            <div>
+              <Label htmlFor="email">Email Address</Label>
+              <div className="relative mt-1">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className={`pl-10 ${errors.email ? 'border-red-500' : ''}`}
+                />
+              </div>
+              {errors.email && (
+                <div className="flex items-center mt-1 text-sm text-red-600">
+                  <AlertCircle className="w-4 h-4 mr-1" />
+                  {errors.email}
+                </div>
+              )}
+            </div>
+
+            {/* Company (for employers) */}
+            {selectedRole === 'EMPLOYER' && (
+              <div>
+                <Label htmlFor="company">Company Name</Label>
+                <div className="relative mt-1">
+                  <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <Input
+                    id="company"
+                    name="company"
+                    placeholder="Acme Inc."
+                    value={formData.company}
+                    onChange={handleChange}
+                    className={`pl-10 ${errors.company ? 'border-red-500' : ''}`}
+                  />
+                </div>
+                {errors.company && (
+                  <div className="flex items-center mt-1 text-sm text-red-600">
+                    <AlertCircle className="w-4 h-4 mr-1" />
+                    {errors.company}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Password */}
+            <div>
+              <Label htmlFor="password">Password</Label>
+              <div className="relative mt-1">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <Input
+                  id="password"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className={`pl-10 pr-10 ${errors.password ? 'border-red-500' : ''}`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+              {formData.password && (
+                <div className="mt-2">
+                  <div className="flex gap-1 mb-1">
+                    {[...Array(4)].map((_, i) => (
+                      <div
+                        key={i}
+                        className={`h-1 flex-1 rounded ${
+                          i < strength ? strengthColors[strength - 1] : 'bg-slate-200'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <p className="text-xs text-slate-600">
+                    Password strength: {strength > 0 ? strengthLabels[strength - 1] : 'Too weak'}
+                  </p>
+                </div>
+              )}
+              {errors.password && (
+                <div className="flex items-center mt-1 text-sm text-red-600">
+                  <AlertCircle className="w-4 h-4 mr-1" />
+                  {errors.password}
+                </div>
+              )}
+            </div>
+
+            {/* Confirm Password */}
+            <div>
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <div className="relative mt-1">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <Input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  className={`pl-10 pr-10 ${errors.confirmPassword ? 'border-red-500' : ''}`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                >
+                  {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+              {formData.confirmPassword && formData.password === formData.confirmPassword && (
+                <div className="flex items-center mt-1 text-sm text-green-600">
+                  <CheckCircle className="w-4 h-4 mr-1" />
+                  Passwords match
+                </div>
+              )}
+              {errors.confirmPassword && (
+                <div className="flex items-center mt-1 text-sm text-red-600">
+                  <AlertCircle className="w-4 h-4 mr-1" />
+                  {errors.confirmPassword}
+                </div>
+              )}
+            </div>
+
+            {/* Terms */}
+            <div className="flex items-start">
+              <input
+                type="checkbox"
+                id="terms"
+                className="mt-1 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                required
+              />
+              <label htmlFor="terms" className="ml-2 text-sm text-slate-600">
+                I agree to the{' '}
+                <a href="#" className="text-indigo-600 hover:text-indigo-700 font-medium">Terms of Service</a>
+                {' '}and{' '}
+                <a href="#" className="text-indigo-600 hover:text-indigo-700 font-medium">Privacy Policy</a>
+              </label>
+            </div>
+
+            {/* Submit Button */}
+            <Button
+              type="submit"
+              className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 shadow-lg shadow-indigo-500/30"
+              disabled={loading}
+            >
+              {loading ? 'Creating account...' : 'Create Account'}
+            </Button>
+          </form>
+
+          {/* Sign In Link */}
+          <div className="mt-6 text-center">
+            <p className="text-sm text-slate-600">
+              Already have an account?{' '}
+              <Link to="/login" className="text-indigo-600 hover:text-indigo-700 font-semibold">
+                Sign in
+              </Link>
+            </p>
+          </div>
+
+          {/* Back to Home */}
+          <div className="mt-4 text-center">
+            <Link to="/" className="text-sm text-slate-500 hover:text-slate-700">
+              ← Back to home
             </Link>
-          </Button>
-        </CardContent>
-        
-        <CardFooter className="flex flex-col items-center text-center space-y-3 pb-6 pt-6 border-t border-gray-100">
-          <p className="text-sm text-gray-500">
-            By creating an account, you agree to our{' '}
-            <Link to="/terms" className="text-blue-600 hover:underline font-medium">Terms</Link> and{' '}
-            <Link to="/privacy" className="text-blue-600 hover:underline font-medium">Privacy Policy</Link>.
-          </p>
-        </CardFooter>
-      </Card>
-
-      {/* Test button (remove in production) */}
-      <button
-        onClick={() => {
-          setFormData({
-            email: 'test@example.com',
-            password: 'password123',
-            firstName: 'John',
-            lastName: 'Doe',
-            company: 'Test Company',
-            role: 'EMPLOYER',
-          })
-          setConfirmPassword('password123')
-        }}
-        className="fixed bottom-4 right-4 text-xs bg-gray-800 text-white px-3 py-1 rounded opacity-70 hover:opacity-100 transition-opacity z-20"
-      >
-        Fill Demo Data
-      </button>
+          </div>
+        </Card>
+      </motion.div>
     </div>
-  )
-}
+  );
+};
 
-export default Register
+export default Register;
