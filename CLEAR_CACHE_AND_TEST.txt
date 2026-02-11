@@ -1,0 +1,89 @@
+╔═══════════════════════════════════════════════════════════╗
+║                                                           ║
+║     🔧 FIX: URL CHANGING TO /login AUTOMATICALLY         ║
+║                                                           ║
+╚═══════════════════════════════════════════════════════════╝
+
+
+THE PROBLEM:
+────────────────────────────────────────────────────────────
+You go to: http://localhost:3000/
+It changes to: http://localhost:3000/login
+(Before you even click anything!)
+
+
+THE CAUSE:
+────────────────────────────────────────────────────────────
+Your browser cached OLD JavaScript with different routing.
+It's running old code that redirects to /login.
+
+
+THE SOLUTION (DO THIS NOW):
+────────────────────────────────────────────────────────────
+
+OPTION 1: HARD REFRESH (Easiest)
+─────────────────────────────────
+1. Go to: http://localhost:3000/
+2. Press: Ctrl + Shift + R
+3. Done!
+
+
+OPTION 2: CLEAR CACHE (If Option 1 doesn't work)
+─────────────────────────────────────────────────
+1. Press: Ctrl + Shift + Delete
+2. Select: "Cached images and files"
+3. Time range: "All time"
+4. Click: "Clear data"
+5. Close browser completely
+6. Reopen browser
+7. Go to: http://localhost:3000/
+
+
+OPTION 3: INCOGNITO MODE (100% Guaranteed)
+───────────────────────────────────────────
+1. Press: Ctrl + Shift + N
+2. Go to: http://localhost:3000/
+3. Test everything there (no cache!)
+
+
+WHAT YOU SHOULD SEE AFTER:
+────────────────────────────────────────────────────────────
+✅ Homepage loads at http://localhost:3000/
+✅ URL stays as http://localhost:3000/ (doesn't change!)
+✅ Click "Sign In" → Modal opens (URL still http://localhost:3000/)
+✅ Click "Get Started" → Modal opens (URL still http://localhost:3000/)
+✅ Homepage visible behind modal (blurred)
+
+
+WHY THIS WORKS:
+────────────────────────────────────────────────────────────
+The code is already fixed! Your browser just needs to load
+the NEW JavaScript instead of the OLD cached version.
+
+Hard refresh or clearing cache forces browser to download
+the new code.
+
+
+TRY THIS RIGHT NOW:
+────────────────────────────────────────────────────────────
+1. Open browser
+2. Press: Ctrl + Shift + N (Incognito)
+3. Type: http://localhost:3000/
+4. Watch homepage load without redirect!
+
+
+IF STILL NOT WORKING:
+────────────────────────────────────────────────────────────
+1. Make sure you typed: http://localhost:3000/
+   (NOT http://localhost:3000/login)
+
+2. Try a different browser (Edge, Firefox, etc.)
+
+3. Check if servers are running:
+   - Frontend should be on port 3000
+   - Backend should be on port 5000
+
+
+═══════════════════════════════════════════════════════════
+JUST DO: Ctrl + Shift + N, then go to localhost:3000
+═══════════════════════════════════════════════════════════

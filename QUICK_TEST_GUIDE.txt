@@ -1,0 +1,147 @@
+╔══════════════════════════════════════════════════════════════════╗
+║                  SimuAI - QUICK TEST GUIDE                       ║
+║              Authentication Fix - Ready to Test                  ║
+╚══════════════════════════════════════════════════════════════════╝
+
+🚀 QUICK START (Choose One):
+
+Option 1: Use Test Script
+   → Double-click: test-auth.bat
+   → This will start both backend and frontend automatically
+
+Option 2: Manual Start
+   → Terminal 1: cd backend && npm run dev
+   → Terminal 2: cd frontend && npm run dev
+
+═══════════════════════════════════════════════════════════════════
+
+📝 TEST SCENARIOS:
+
+1. REGISTER AS CANDIDATE
+   ✓ Go to: http://localhost:5173/register
+   ✓ Select: "Job Seeker"
+   ✓ Fill: John Doe, john@test.com, password123
+   ✓ Expected: Redirect to /my-assessments
+
+2. REGISTER AS EMPLOYER
+   ✓ Go to: http://localhost:5173/register
+   ✓ Select: "Employer"
+   ✓ Fill: Jane Smith, jane@test.com, Tech Corp, password123
+   ✓ Expected: Redirect to /dashboard
+
+3. LOGIN AS CANDIDATE
+   ✓ Go to: http://localhost:5173/login
+   ✓ Enter: john@test.com, password123
+   ✓ Expected: Redirect to /my-assessments
+
+4. LOGIN AS EMPLOYER
+   ✓ Go to: http://localhost:5173/login
+   ✓ Enter: jane@test.com, password123
+   ✓ Expected: Redirect to /dashboard
+
+═══════════════════════════════════════════════════════════════════
+
+✅ SUCCESS INDICATORS:
+
+Backend Running:
+   ✓ "✅ Database connected"
+   ✓ "🚀 Server running on port 5000"
+
+Frontend Running:
+   ✓ "VITE ready in xxx ms"
+   ✓ "Local: http://localhost:5173/"
+
+Registration Success:
+   ✓ Green toast: "Account created!"
+   ✓ Automatic redirect to dashboard
+   ✓ No console errors
+
+Login Success:
+   ✓ Green toast: "Welcome back!"
+   ✓ Redirect to correct dashboard
+   ✓ User data visible in UI
+
+═══════════════════════════════════════════════════════════════════
+
+🔍 DEBUGGING:
+
+Check Browser Console:
+   → F12 → Console tab
+   → Look for errors (red text)
+   → Check: localStorage.getItem('accessToken')
+   → Check: localStorage.getItem('user')
+
+Check Backend Logs:
+   → Look at terminal running backend
+   → Check for "Login error:" or "Registration error:"
+
+Common Issues:
+   ❌ "User already exists" → Use different email
+   ❌ "Invalid credentials" → Check password
+   ❌ "MODULE_NOT_FOUND" → Run: npm install
+   ❌ "Prisma not generated" → Run: npx prisma generate
+
+═══════════════════════════════════════════════════════════════════
+
+📚 DOCUMENTATION:
+
+Detailed Testing: TEST_AUTH_FLOW.md
+Complete Summary: AUTH_FIX_SUMMARY.md
+This Quick Guide: QUICK_TEST_GUIDE.txt
+
+═══════════════════════════════════════════════════════════════════
+
+🎯 WHAT WAS FIXED:
+
+✅ Backend now returns correct token structure
+✅ Frontend handles tokens properly
+✅ Registration creates user + profile correctly
+✅ Login redirects to correct dashboard by role
+✅ All three roles work: ADMIN, EMPLOYER, CANDIDATE
+✅ No more data structure mismatches
+✅ No TypeScript or JavaScript errors
+
+═══════════════════════════════════════════════════════════════════
+
+📊 ROLE-BASED REDIRECTS:
+
+ADMIN      → /admin              (Admin Dashboard)
+EMPLOYER   → /dashboard          (Employer Dashboard)
+CANDIDATE  → /my-assessments     (Candidate Dashboard)
+
+═══════════════════════════════════════════════════════════════════
+
+🔐 TEST CREDENTIALS (After Registration):
+
+Candidate:
+   Email: john@test.com
+   Password: password123
+   Dashboard: /my-assessments
+
+Employer:
+   Email: jane@test.com
+   Password: password123
+   Dashboard: /dashboard
+
+Admin:
+   Create via: node backend/scripts/create-admin.js
+   Dashboard: /admin
+
+═══════════════════════════════════════════════════════════════════
+
+💡 TIPS:
+
+1. Use Chrome DevTools (F12) to monitor network requests
+2. Check "Network" tab to see API responses
+3. Use "Application" tab to view localStorage
+4. Keep backend terminal visible to see logs
+5. Test in incognito mode for clean session
+
+═══════════════════════════════════════════════════════════════════
+
+✨ READY TO TEST! ✨
+
+Start with: test-auth.bat
+Or read: TEST_AUTH_FLOW.md for detailed instructions
+
+═══════════════════════════════════════════════════════════════════

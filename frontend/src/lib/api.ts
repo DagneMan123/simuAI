@@ -181,6 +181,9 @@ export const simulationApi = {
   // Stats
   getStats: () => employerApi.getEmployerStats(),
   exportResults: (simId: string) => employerApi.exportResults(simId),
+  
+  // Analytics endpoint for TalentAnalytics page
+  getAnalytics: (params?: string) => api.get(`/simulations/analytics${params || ''}`),
 };
 
 /** 

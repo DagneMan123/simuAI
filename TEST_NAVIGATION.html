@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navigation Test - SimuAI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-card {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #4F46E5;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        .test-button:hover {
+            background: #4338CA;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+        .error {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+        .info {
+            background: #DBEAFE;
+            color: #1E40AF;
+        }
+        h1 {
+            color: #1F2937;
+        }
+        h2 {
+            color: #4B5563;
+            margin-top: 30px;
+        }
+        code {
+            background: #F3F4F6;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+        .checklist li {
+            padding: 8px 0;
+        }
+        .checklist li:before {
+            content: "☐ ";
+            color: #6B7280;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 SimuAI Navigation Test</h1>
+    
+    <div class="test-card">
+        <h2>Quick Navigation Tests</h2>
+        <p>Click these buttons to test navigation:</p>
+        
+        <button class="test-button" onclick="testNavigation('/register')">
+            Test Register Page
+        </button>
+        
+        <button class="test-button" onclick="testNavigation('/login')">
+            Test Login Page
+        </button>
+        
+        <button class="test-button" onclick="testNavigation('/')">
+            Test Landing Page
+        </button>
+        
+        <div id="test-result"></div>
+    </div>
+
+    <div class="test-card">
+        <h2>Frontend Server Status</h2>
+        <button class="test-button" onclick="checkFrontend()">
+            Check Frontend Server
+        </button>
+        <div id="frontend-status"></div>
+    </div>
+
+    <div class="test-card">
+        <h2>Backend Server Status</h2>
+        <button class="test-button" onclick="checkBackend()">
+            Check Backend Server
+        </button>
+        <div id="backend-status"></div>
+    </div>
+
+    <div class="test-card">
+        <h2>Pre-Flight Checklist</h2>
+        <ul class="checklist">
+            <li>Frontend server running on <code>http://localhost:5173</code></li>
+            <li>Backend server running on <code>http://localhost:5000</code></li>
+            <li>No errors in browser console (F12)</li>
+            <li>Browser cache cleared (Ctrl+Shift+Delete)</li>
+            <li>Page hard refreshed (Ctrl+F5)</li>
+        </ul>
+    </div>
+
+    <div class="test-card">
+        <h2>Common Issues & Solutions</h2>
+        
+        <h3>Issue 1: Button doesn't respond</h3>
+        <p><strong>Solution:</strong> Check browser console for JavaScript errors</p>
+        
+        <h3>Issue 2: Page doesn't load</h3>
+        <p><strong>Solution:</strong> Verify frontend server is running</p>
+        
+        <h3>Issue 3: 404 Not Found</h3>
+        <p><strong>Solution:</strong> Check route configuration in App.tsx</p>
+        
+        <h3>Issue 4: Blank page</h3>
+        <p><strong>Solution:</strong> Check Register component for errors</p>
+    </div>
+
+    <div class="test-card">
+        <h2>Manual Test Steps</h2>
+        <ol>
+            <li>Open <code>http://localhost:5173</code> in browser</li>
+            <li>Open DevTools (F12)</li>
+            <li>Go to Console tab</li>
+            <li>Click "Get Started" button on landing page</li>
+            <li>Check if URL changes to <code>/register</code></li>
+            <li>Check if register page loads</li>
+            <li>Check console for any errors</li>
+        </ol>
+    </div>
+
+    <script>
+        function testNavigation(path) {
+            const baseUrl = 'http://localhost:5173';
+            const fullUrl = baseUrl + path;
+            const resultDiv = document.getElementById('test-result');
+            
+            resultDiv.innerHTML = `<div class="status info">Testing navigation to ${path}...</div>`;
+            
+            // Try to open in new tab
+            const newWindow = window.open(fullUrl, '_blank');
+            
+            if (newWindow) {
+                resultDiv.innerHTML = `
+                    <div class="status success">
+                        ✅ Opened ${path} in new tab<br>
+                        URL: <code>${fullUrl}</code>
+                    </div>
+                `;
+            } else {
+                resultDiv.innerHTML = `
+                    <div class="status error">
+                        ❌ Failed to open ${path}<br>
+                        Please allow popups or manually visit: <code>${fullUrl}</code>
+                    </div>
+                `;
+            }
+        }
+
+        function checkFrontend() {
+            const statusDiv = document.getElementById('frontend-status');
+            statusDiv.innerHTML = '<div class="status info">Checking frontend server...</div>';
+            
+            fetch('http://localhost:5173')
+                .then(response => {
+                    if (response.ok) {
+                        statusDiv.innerHTML = `
+                            <div class="status success">
+                                ✅ Frontend server is running!<br>
+                                Status: ${response.status} ${response.statusText}
+                            </div>
+                        `;
+                    } else {
+                        statusDiv.innerHTML = `
+                            <div class="status error">
+                                ❌ Frontend server responded with error<br>
+                                Status: ${response.status} ${response.statusText}
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    statusDiv.innerHTML = `
+                        <div class="status error">
+                            ❌ Cannot connect to frontend server<br>
+                            Error: ${error.message}<br>
+                            <br>
+                            <strong>Solution:</strong> Start frontend with:<br>
+                            <code>cd frontend && npm run dev</code>
+                        </div>
+                    `;
+                });
+        }
+
+        function checkBackend() {
+            const statusDiv = document.getElementById('backend-status');
+            statusDiv.innerHTML = '<div class="status info">Checking backend server...</div>';
+            
+            fetch('http://localhost:5000/api')
+                .then(response => {
+                    if (response.ok || response.status === 404) {
+                        statusDiv.innerHTML = `
+                            <div class="status success">
+                                ✅ Backend server is running!<br>
+                                Status: ${response.status} ${response.statusText}
+                            </div>
+                        `;
+                    } else {
+                        statusDiv.innerHTML = `
+                            <div class="status error">
+                                ❌ Backend server responded with error<br>
+                                Status: ${response.status} ${response.statusText}
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    statusDiv.innerHTML = `
+                        <div class="status error">
+                            ❌ Cannot connect to backend server<br>
+                            Error: ${error.message}<br>
+                            <br>
+                            <strong>Solution:</strong> Start backend with:<br>
+                            <code>cd backend && npm run dev</code>
+                        </div>
+                    `;
+                });
+        }
+
+        // Auto-check on page load
+        window.onload = function() {
+            setTimeout(() => {
+                checkFrontend();
+                checkBackend();
+            }, 500);
+        };
+    </script>
+</body>
+</html>

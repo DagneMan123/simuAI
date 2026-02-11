@@ -1,0 +1,51 @@
+╔════════════════════════════════════════════════════════════╗
+║                                                            ║
+║              ⚡ COPY THIS EXACT COMMAND ⚡                  ║
+║                                                            ║
+╚════════════════════════════════════════════════════════════╝
+
+IN YOUR POWERSHELL, COPY AND PASTE THIS:
+
+npx prisma migrate dev --name init
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PRESS ENTER AND WAIT...
+
+This will:
+1. Create the database
+2. Run migrations
+3. Generate Prisma Client
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+AFTER IT FINISHES, TYPE:
+
+npm run dev
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ YOUR SERVER WILL START WITH NO ERRORS!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 THE COMMAND TO COPY:
+
+npx prisma migrate dev --name init
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 OR RUN THE POWERSHELL SCRIPT:
+
+.\fix-prisma.ps1
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚨 IF YOU GET "EXECUTION POLICY" ERROR:
+
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\fix-prisma.ps1
+
+╔════════════════════════════════════════════════════════════╗
+║         👆 COPY THE COMMAND ABOVE NOW! 👆                  ║
+╚════════════════════════════════════════════════════════════╝

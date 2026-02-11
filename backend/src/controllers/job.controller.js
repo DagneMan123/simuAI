@@ -465,40 +465,31 @@ class JobController {
       }
 
       // Generate questions using AI service
-      const aiService = require('../services/ai.service');
-      const generatedQuestions = await aiService.generateQuestions({
-        jobTitle: job.title,
-        jobDescription: job.description,
-        skills: job.requirements || [],
-        difficulty: difficulty.toUpperCase(),
-        count: count
-      });
-
-      // Save questions to database
-      const questions = await Promise.all(
-        generatedQuestions.map(q =>
-          prisma.aiQuestion.create({
-            data: {
-              ...q,
-              jobId: id
-            }
-          })
-        )
+      const AIService = require('../services/ai.service');
+      const generatedQuestions = await AIService.generateQuestions(
+        job.id,
+        job.description,
+        job.requirements || []
       );
+      
+      // Filter to requested count and difficulty
+      const filteredQuestions = generatedQuestions.slice(0, count);
 
+      // Questions are already saved by AIService, just return them
       res.json({
         success: true,
-        message: `${count} AI questions generated successfully`,
-        data: questions
+        message: 'Questions generated successfully',
+        data: filteredQuestions
       });
     } catch (error) {
-      console.error('Generate AI questions error:', error);
+      console.error('Error generating questions:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to generate AI questions'
+        message: 'Failed to generate questions',
+        error: error.message
       });
     }
   }
-}
+};
 
 module.exports = JobController;

@@ -20,9 +20,9 @@ async function createAdmin() {
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
     const email = await question('👤 Admin Email: ');
-    const password = await question('🔒 Admin Password (min 8 chars): ');
-    const firstName = await question('📝 First Name: ');
-    const lastName = await question('📝 Last Name: ');
+    const password = await question('Admin Password (min 8 chars): ');
+    const firstName = await question(' First Name: ');
+    const lastName = await question(' Last Name: ');
 
     console.log('\n🔄 Creating admin user...');
 

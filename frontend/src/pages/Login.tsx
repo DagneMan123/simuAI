@@ -47,14 +47,16 @@ const Login: React.FC = () => {
     setLoading(true);
     try {
       const response = await authApi.login(formData.email, formData.password);
-      const { token, user } = response.data;
+      const { tokens, user } = response.data;
       
-      apiHelpers.setToken(token);
+      // Store tokens and user data
+      apiHelpers.setToken(tokens.accessToken);
+      localStorage.setItem('refreshToken', tokens.refreshToken);
       localStorage.setItem('user', JSON.stringify(user));
       
       toast({
         title: 'Welcome back!',
-        description: `Logged in as ${user.firstName} ${user.lastName}`,
+        description: `Logged in successfully`,
       });
 
       // Redirect based on role

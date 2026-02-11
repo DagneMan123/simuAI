@@ -71,7 +71,7 @@ const Register: React.FC = () => {
 
     setLoading(true);
     try {
-      await authApi.register({
+      const response = await authApi.register({
         email: formData.email,
         password: formData.password,
         firstName: formData.firstName,
@@ -80,20 +80,23 @@ const Register: React.FC = () => {
         company: selectedRole === 'EMPLOYER' ? formData.company : undefined
       });
 
+      const { tokens, user } = response.data;
+      
+      // Store tokens and user data
+      apiHelpers.setToken(tokens.accessToken);
+      localStorage.setItem('refreshToken', tokens.refreshToken);
+      localStorage.setItem('user', JSON.stringify(user));
+
       toast({
         title: 'Account created!',
-        description: 'Please check your email to verify your account.',
+        description: 'Welcome to SimuAI! Your account has been created successfully.',
       });
-
-      // Auto login after registration
-      const loginResponse = await authApi.login(formData.email, formData.password, selectedRole);
-      const { token, user } = loginResponse.data;
-      
-      apiHelpers.setToken(token);
-      localStorage.setItem('user', JSON.stringify(user));
 
       // Redirect based on role
       switch (selectedRole) {
+        case 'ADMIN':
+          navigate('/admin');
+          break;
         case 'EMPLOYER':
           navigate('/dashboard');
           break;

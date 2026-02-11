@@ -1,0 +1,57 @@
+╔════════════════════════════════════════════════════════════╗
+║                                                            ║
+║              ⚠️  YOU SKIPPED A STEP! ⚠️                    ║
+║                                                            ║
+╚════════════════════════════════════════════════════════════╝
+
+You ran: npm run dev ❌
+But you need to run: npx prisma generate FIRST! ✅
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 IN YOUR POWERSHELL, TYPE THIS COMMAND:
+
+npx prisma generate
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⏱️  WAIT 30 SECONDS...
+
+You'll see:
+✔ Generated Prisma Client
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ THEN TYPE:
+
+npm run dev
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎉 SERVER WILL START! NO MORE ERRORS!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 OR JUST DOUBLE-CLICK:
+
+   📁 RUN_THESE_COMMANDS.bat
+
+   (It will do both steps automatically!)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔴 THE COMMAND YOU NEED TO TYPE RIGHT NOW:
+
+npx prisma generate
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚡ COPY THIS COMMAND ⚡
+
+npx prisma generate
+
+PASTE IT IN YOUR POWERSHELL AND PRESS ENTER!
+
+╔════════════════════════════════════════════════════════════╗
+║              👆 DO IT NOW! 👆                              ║
+╚════════════════════════════════════════════════════════════╝
