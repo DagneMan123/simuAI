@@ -96,7 +96,7 @@ const EmployerDashboard: React.FC = () => {
   ]
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/20 to-indigo-50/30">
       <Navbar />
       
       <div className="container mx-auto px-4 py-8">
@@ -104,19 +104,19 @@ const EmployerDashboard: React.FC = () => {
         <div className="mb-8">
           <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight">Employer Dashboard</h1>
-              <p className="text-muted-foreground">
+              <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">Employer Dashboard</h1>
+              <p className="text-slate-600 mt-2">
                 Monitor your hiring simulations and candidate performance
               </p>
             </div>
             <div className="flex gap-2">
-              <Button asChild>
+              <Button asChild className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-lg shadow-purple-500/30">
                 <Link to="/simulations/create">
                   <Plus className="mr-2 h-4 w-4" />
                   New Simulation
                 </Link>
               </Button>
-              <Button variant="outline">
+              <Button variant="outline" className="border-slate-300 hover:bg-white/80">
                 <Filter className="mr-2 h-4 w-4" />
                 Filter
               </Button>
@@ -126,77 +126,77 @@ const EmployerDashboard: React.FC = () => {
 
         {/* Stats Grid */}
         <div className="mb-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
+          <Card className="border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Candidates</p>
-                  <p className="text-2xl font-bold">{analytics?.totalCandidates || 0}</p>
+                  <p className="text-sm font-medium text-slate-600">Total Candidates</p>
+                  <p className="text-2xl font-bold text-slate-900">{analytics?.totalCandidates || 0}</p>
                 </div>
-                <div className="rounded-lg bg-blue-100 p-3 dark:bg-blue-900">
-                  <Users className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                <div className="rounded-lg bg-gradient-to-br from-blue-500 to-cyan-600 p-3 shadow-lg shadow-blue-500/30">
+                  <Users className="h-6 w-6 text-white" />
                 </div>
               </div>
               <div className="mt-4">
                 <div className="flex items-center text-sm">
                   <TrendingUp className="mr-1 h-4 w-4 text-green-500" />
-                  <span className="text-green-500">+12% </span>
-                  <span className="text-muted-foreground ml-2">from last month</span>
+                  <span className="text-green-600 font-medium">+12% </span>
+                  <span className="text-slate-600 ml-2">from last month</span>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Average Score</p>
-                  <p className="text-2xl font-bold">{analytics?.avgScore?.toFixed(1) || 0}%</p>
+                  <p className="text-sm font-medium text-slate-600">Average Score</p>
+                  <p className="text-2xl font-bold text-slate-900">{analytics?.avgScore?.toFixed(1) || 0}%</p>
                 </div>
-                <div className="rounded-lg bg-green-100 p-3 dark:bg-green-900">
-                  <Target className="h-6 w-6 text-green-600 dark:text-green-400" />
+                <div className="rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 p-3 shadow-lg shadow-green-500/30">
+                  <Target className="h-6 w-6 text-white" />
                 </div>
               </div>
               <div className="mt-4">
-                <Progress value={analytics?.avgScore || 0} className="h-2" />
+                <Progress value={analytics?.avgScore || 0} className="h-2 bg-slate-200" />
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Completion Rate</p>
-                  <p className="text-2xl font-bold">{analytics?.completionRate?.toFixed(1) || 0}%</p>
+                  <p className="text-sm font-medium text-slate-600">Completion Rate</p>
+                  <p className="text-2xl font-bold text-slate-900">{analytics?.completionRate?.toFixed(1) || 0}%</p>
                 </div>
-                <div className="rounded-lg bg-purple-100 p-3 dark:bg-purple-900">
-                  <BarChart3 className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                </div>
-              </div>
-              <div className="mt-4">
-                <div className="flex items-center text-sm">
-                  <span className="text-muted-foreground">Industry avg: 65%</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Avg. Time Saved</p>
-                  <p className="text-2xl font-bold">42h</p>
-                </div>
-                <div className="rounded-lg bg-orange-100 p-3 dark:bg-orange-900">
-                  <Clock className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                <div className="rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 p-3 shadow-lg shadow-purple-500/30">
+                  <BarChart3 className="h-6 w-6 text-white" />
                 </div>
               </div>
               <div className="mt-4">
                 <div className="flex items-center text-sm">
-                  <span className="text-muted-foreground">Per hire vs traditional methods</span>
+                  <span className="text-slate-600">Industry avg: 65%</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-shadow">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-slate-600">Avg. Time Saved</p>
+                  <p className="text-2xl font-bold text-slate-900">42h</p>
+                </div>
+                <div className="rounded-lg bg-gradient-to-br from-orange-500 to-amber-600 p-3 shadow-lg shadow-orange-500/30">
+                  <Clock className="h-6 w-6 text-white" />
+                </div>
+              </div>
+              <div className="mt-4">
+                <div className="flex items-center text-sm">
+                  <span className="text-slate-600">Per hire vs traditional methods</span>
                 </div>
               </div>
             </CardContent>
@@ -205,21 +205,21 @@ const EmployerDashboard: React.FC = () => {
 
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-          <TabsList>
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="simulations">Simulations</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            <TabsTrigger value="candidates">Candidates</TabsTrigger>
+          <TabsList className="bg-white/80 backdrop-blur-sm border border-slate-200/60 shadow-md">
+            <TabsTrigger value="overview" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white">Overview</TabsTrigger>
+            <TabsTrigger value="simulations" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white">Simulations</TabsTrigger>
+            <TabsTrigger value="analytics" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white">Analytics</TabsTrigger>
+            <TabsTrigger value="candidates" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white">Candidates</TabsTrigger>
           </TabsList>
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-8">
             {/* Charts */}
             <div className="grid gap-6 md:grid-cols-2">
-              <Card>
+              <Card className="border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-lg">
                 <CardHeader>
-                  <CardTitle>Performance Trends</CardTitle>
-                  <CardDescription>
+                  <CardTitle className="text-slate-900">Performance Trends</CardTitle>
+                  <CardDescription className="text-slate-600">
                     Candidate performance over the last 6 months
                   </CardDescription>
                 </CardHeader>
@@ -238,10 +238,10 @@ const EmployerDashboard: React.FC = () => {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-lg">
                 <CardHeader>
-                  <CardTitle>Skill Assessment</CardTitle>
-                  <CardDescription>
+                  <CardTitle className="text-slate-900">Skill Assessment</CardTitle>
+                  <CardDescription className="text-slate-600">
                     Average scores by skill category
                   </CardDescription>
                 </CardHeader>

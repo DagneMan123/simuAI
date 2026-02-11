@@ -1,0 +1,112 @@
+╔═══════════════════════════════════════════════════════════╗
+║                                                           ║
+║          🚀 START WEBSITE - STEP BY STEP                 ║
+║                                                           ║
+╚═══════════════════════════════════════════════════════════╝
+
+
+PROBLEM:
+────────────────────────────────────────────────────────────
+Website not showing in browser at http://localhost:3000/
+
+
+SOLUTION (DO THESE STEPS):
+────────────────────────────────────────────────────────────
+
+STEP 1: Open Terminal in Frontend Folder
+─────────────────────────────────────────
+1. Open Command Prompt or PowerShell
+2. Navigate to frontend folder:
+   cd C:\Users\Hena\Desktop\simuAI\frontend
+
+
+STEP 2: Install Dependencies (If Not Done)
+─────────────────────────────────────────
+Run this command:
+   npm install
+
+Wait for it to complete (may take 1-2 minutes)
+
+
+STEP 3: Start Frontend Server
+─────────────────────────────────────────
+Run this command:
+   npm run dev
+
+You should see:
+   ➜  Local:   http://localhost:3000/
+
+
+STEP 4: Open Browser
+─────────────────────────────────────────
+1. Open Chrome, Edge, or Firefox
+2. Type in address bar: http://localhost:3000/
+3. Press Enter
+
+
+STEP 5: Clear Cache (If Needed)
+─────────────────────────────────────────
+If page doesn't load:
+1. Press: Ctrl + Shift + R (hard refresh)
+2. Or press: Ctrl + Shift + Delete (clear cache)
+
+
+WHAT YOU SHOULD SEE:
+────────────────────────────────────────────────────────────
+✅ SimuAI homepage with logo
+✅ Navigation bar at top
+✅ "Sign In" and "Get Started" buttons
+✅ Hero section with "Hire Smarter with AI"
+✅ Features, pricing, testimonials sections
+
+
+IF TERMINAL SHOWS ERROR:
+────────────────────────────────────────────────────────────
+
+Error: "Cannot find module"
+→ Run: npm install
+
+Error: "Port 3000 is already in use"
+→ Kill the process:
+   netstat -ano | findstr :3000
+   taskkill /PID <number> /F
+→ Then run: npm run dev again
+
+Error: "ENOENT: no such file or directory"
+→ Make sure you're in frontend folder:
+   cd C:\Users\Hena\Desktop\simuAI\frontend
+
+
+IF BROWSER SHOWS BLANK PAGE:
+────────────────────────────────────────────────────────────
+1. Press F12 (open DevTools)
+2. Go to Console tab
+3. Look for red errors
+4. Clear cache: Ctrl + Shift + Delete
+5. Hard refresh: Ctrl + Shift + R
+
+
+QUICK CHECK:
+────────────────────────────────────────────────────────────
+Is server running?
+→ Terminal should show: "Local: http://localhost:3000/"
+
+Is URL correct?
+→ Should be: http://localhost:3000/ (not 5173, not 5000)
+
+Is browser cache clear?
+→ Try Incognito mode: Ctrl + Shift + N
+
+
+COMPLETE COMMAND SEQUENCE:
+────────────────────────────────────────────────────────────
+cd C:\Users\Hena\Desktop\simuAI\frontend
+npm install
+npm run dev
+
+Then open browser: http://localhost:3000/
+
+
+═══════════════════════════════════════════════════════════
+MAKE SURE FRONTEND SERVER IS RUNNING!
+═══════════════════════════════════════════════════════════

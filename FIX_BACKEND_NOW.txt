@@ -1,0 +1,133 @@
+╔═══════════════════════════════════════════════════════════╗
+║                                                           ║
+║        🔧 FIX BACKEND - DATABASE SETUP REQUIRED          ║
+║                                                           ║
+╚═══════════════════════════════════════════════════════════╝
+
+
+PROBLEM:
+────────────────────────────────────────────────────────────
+❌ Login shows "Invalid credentials"
+❌ Register not working
+❌ Backend not working
+
+
+ROOT CAUSE:
+────────────────────────────────────────────────────────────
+Database is not set up!
+No users exist in the database.
+Prisma client not generated.
+
+
+SOLUTION (3 STEPS):
+────────────────────────────────────────────────────────────
+
+STEP 1: Open Terminal in Backend Folder
+cd C:\Users\Hena\Desktop\simuAI\backend
+
+
+STEP 2: Run These Commands (One by One)
+────────────────────────────────────────────────────────────
+
+Command 1: Generate Prisma Client
+npx prisma generate
+
+Command 2: Create Database Tables
+npx prisma db push
+
+Command 3: Create Test Users
+node setup-db.js
+
+
+STEP 3: Start Backend Server
+npm start
+
+
+WHAT YOU'LL SEE:
+────────────────────────────────────────────────────────────
+After running setup-db.js:
+
+✅ Admin created: admin@simuai.com
+✅ Employer created: employer@simuai.com
+✅ Candidate created: candidate@simuai.com
+
+Test Users:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. Admin:
+   Email: admin@simuai.com
+   Password: password123
+
+2. Employer:
+   Email: employer@simuai.com
+   Password: password123
+
+3. Candidate:
+   Email: candidate@simuai.com
+   Password: password123
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+AFTER SETUP, TEST LOGIN:
+────────────────────────────────────────────────────────────
+1. Go to: http://localhost:3000/login
+2. Enter:
+   Email: admin@simuai.com
+   Password: password123
+3. Click "Sign In"
+4. Should redirect to /admin dashboard
+
+
+TEST REGISTER:
+────────────────────────────────────────────────────────────
+1. Go to: http://localhost:3000/register
+2. Fill form:
+   First Name: Test
+   Last Name: User
+   Email: test@example.com
+   Password: password123
+   Role: Candidate
+3. Click "Create Account"
+4. Should redirect to /my-assessments
+
+
+COMPLETE COMMAND SEQUENCE:
+────────────────────────────────────────────────────────────
+cd backend
+npx prisma generate
+npx prisma db push
+node setup-db.js
+npm start
+
+
+IF YOU GET ERRORS:
+────────────────────────────────────────────────────────────
+
+Error: "Cannot find module 'bcryptjs'"
+→ Run: npm install
+
+Error: "Database connection failed"
+→ Check PostgreSQL is running
+→ Check DATABASE_URL in .env file
+
+Error: "Prisma Client not generated"
+→ Run: npx prisma generate
+
+
+VERIFY BACKEND IS RUNNING:
+────────────────────────────────────────────────────────────
+You should see:
+AI-Hire Backend Server Started!
+===================================
+Port: 5000
+Environment: development
+Database: PostgreSQL (Connected)
+===================================
+
+
+═══════════════════════════════════════════════════════════
+RUN THESE 4 COMMANDS IN ORDER:
+1. npx prisma generate
+2. npx prisma db push
+3. node setup-db.js
+4. npm start
+═══════════════════════════════════════════════════════════

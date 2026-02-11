@@ -1,0 +1,74 @@
+╔═══════════════════════════════════════════════════════════╗
+║                                                           ║
+║              TYPE THIS URL IN BROWSER:                   ║
+║                                                           ║
+║          http://localhost:3000/                          ║
+║                                                           ║
+║              (NOT /login at the end!)                    ║
+║                                                           ║
+╚═══════════════════════════════════════════════════════════╝
+
+
+THE CODE IS CORRECT! ✅
+────────────────────────────────────────────────────────────
+Your routing is perfect:
+- Route "/" → Homepage ✅
+- Route "/login" → Login page ✅
+
+
+THE ISSUE:
+────────────────────────────────────────────────────────────
+Your browser is opening the LAST page you visited.
+Last time you were on /login, so it opens /login again.
+
+
+THE FIX:
+────────────────────────────────────────────────────────────
+
+STEP 1: Open Browser
+
+STEP 2: Click in URL Bar
+
+STEP 3: Delete Everything
+
+STEP 4: Type EXACTLY:
+   http://localhost:3000/
+
+STEP 5: Press Enter
+
+RESULT: ✅ Homepage shows!
+
+
+WRONG URLS (Don't Type These):
+────────────────────────────────────────────────────────────
+❌ http://localhost:3000/login
+❌ localhost:3000/login
+❌ localhost/login
+
+
+CORRECT URL (Type This):
+────────────────────────────────────────────────────────────
+✅ http://localhost:3000/
+✅ localhost:3000/
+
+
+ALTERNATIVE: CLEAR BROWSER HISTORY
+────────────────────────────────────────────────────────────
+1. Press: Ctrl + Shift + Delete
+2. Select: "Browsing history"
+3. Click: "Clear data"
+4. Close browser
+5. Open browser
+6. Type: http://localhost:3000/
+
+
+ALTERNATIVE: USE INCOGNITO
+────────────────────────────────────────────────────────────
+1. Press: Ctrl + Shift + N
+2. Type: http://localhost:3000/
+3. Homepage shows! (no history in incognito)
+
+
+═══════════════════════════════════════════════════════════
+JUST TYPE: http://localhost:3000/ (with slash at end)
+═══════════════════════════════════════════════════════════

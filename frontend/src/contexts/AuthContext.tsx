@@ -18,7 +18,7 @@ export interface RegisterData {
   password?: string;
   firstName: string;
   lastName: string;
-  role: 'EMPLOYER' | 'CANDIDATE';
+  role: UserRole;
   company?: string;
 }
 

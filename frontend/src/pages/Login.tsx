@@ -6,12 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
-import { authApi, apiHelpers } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -46,13 +47,7 @@ const Login: React.FC = () => {
 
     setLoading(true);
     try {
-      const response = await authApi.login(formData.email, formData.password);
-      const { tokens, user } = response.data;
-      
-      // Store tokens and user data
-      apiHelpers.setToken(tokens.accessToken);
-      localStorage.setItem('refreshToken', tokens.refreshToken);
-      localStorage.setItem('user', JSON.stringify(user));
+      const user = await login(formData.email, formData.password);
       
       toast({
         title: 'Welcome back!',

@@ -102,22 +102,22 @@ const AdminDashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-rose-50/20 to-orange-50/30">
       <Navbar />
       
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
-              <p className="text-muted-foreground">System overview and administration</p>
+              <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-rose-600 to-orange-600 bg-clip-text text-transparent">Admin Dashboard</h1>
+              <p className="text-slate-600 mt-2">System overview and administration</p>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline">
+              <Button variant="outline" className="border-slate-300 hover:bg-white/80">
                 <Settings className="mr-2 h-4 w-4" />
                 Settings
               </Button>
-              <Button>
+              <Button className="bg-gradient-to-r from-rose-600 to-orange-600 hover:from-rose-700 hover:to-orange-700 shadow-lg shadow-rose-500/30">
                 <UserPlus className="mr-2 h-4 w-4" />
                 Add User
               </Button>
@@ -126,78 +126,78 @@ const AdminDashboard: React.FC = () => {
         </div>
 
         <div className="mb-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
+          <Card className="border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Users</p>
-                  <p className="text-2xl font-bold">{stats?.totalUsers || 0}</p>
+                  <p className="text-sm font-medium text-slate-600">Total Users</p>
+                  <p className="text-2xl font-bold text-slate-900">{stats?.totalUsers || 0}</p>
                 </div>
-                <div className="rounded-lg bg-blue-100 p-3 dark:bg-blue-900">
-                  <Users className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                <div className="rounded-lg bg-gradient-to-br from-blue-500 to-cyan-600 p-3 shadow-lg shadow-blue-500/30">
+                  <Users className="h-6 w-6 text-white" />
                 </div>
               </div>
               <div className="mt-4 flex items-center text-sm">
                 <TrendingUp className="mr-1 h-4 w-4 text-green-500" />
-                <span className="text-green-500">+12% </span>
-                <span className="text-muted-foreground ml-2">from last month</span>
+                <span className="text-green-600 font-medium">+12% </span>
+                <span className="text-slate-600 ml-2">from last month</span>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Active Simulations</p>
-                  <p className="text-2xl font-bold">{stats?.totalSimulations || 0}</p>
+                  <p className="text-sm font-medium text-slate-600">Active Simulations</p>
+                  <p className="text-2xl font-bold text-slate-900">{stats?.totalSimulations || 0}</p>
                 </div>
-                <div className="rounded-lg bg-purple-100 p-3 dark:bg-purple-900">
-                  <Briefcase className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                <div className="rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 p-3 shadow-lg shadow-purple-500/30">
+                  <Briefcase className="h-6 w-6 text-white" />
                 </div>
               </div>
-              <div className="mt-4 text-sm text-muted-foreground">
+              <div className="mt-4 text-sm text-slate-600">
                 {stats?.activeSessions || 0} active sessions
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Submissions</p>
-                  <p className="text-2xl font-bold">{stats?.totalSubmissions || 0}</p>
+                  <p className="text-sm font-medium text-slate-600">Submissions</p>
+                  <p className="text-2xl font-bold text-slate-900">{stats?.totalSubmissions || 0}</p>
                 </div>
-                <div className="rounded-lg bg-green-100 p-3 dark:bg-green-900">
-                  <BarChart3 className="h-6 w-6 text-green-600 dark:text-green-400" />
+                <div className="rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 p-3 shadow-lg shadow-green-500/30">
+                  <BarChart3 className="h-6 w-6 text-white" />
                 </div>
               </div>
               <div className="mt-4">
-                <Progress value={85} className="h-2" />
+                <Progress value={85} className="h-2 bg-slate-200" />
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">System Health</p>
-                  <p className="text-2xl font-bold">{systemHealth.uptime}</p>
+                  <p className="text-sm font-medium text-slate-600">System Health</p>
+                  <p className="text-2xl font-bold text-slate-900">{systemHealth.uptime}</p>
                 </div>
-                <div className="rounded-lg bg-orange-100 p-3 dark:bg-orange-900">
-                  <Server className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                <div className="rounded-lg bg-gradient-to-br from-orange-500 to-amber-600 p-3 shadow-lg shadow-orange-500/30">
+                  <Server className="h-6 w-6 text-white" />
                 </div>
               </div>
-              <div className="mt-4 text-sm text-muted-foreground">All systems operational</div>
+              <div className="mt-4 text-sm text-slate-600">All systems operational</div>
             </CardContent>
           </Card>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsList className="bg-white/80 backdrop-blur-sm border border-slate-200/60 shadow-md">
+            <TabsTrigger value="overview" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-rose-600 data-[state=active]:to-orange-600 data-[state=active]:text-white">Overview</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="system">System</TabsTrigger>
           </TabsList>

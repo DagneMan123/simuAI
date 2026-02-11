@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {  useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   Brain, 
@@ -14,7 +14,6 @@ import {
   Star,
   Award,
   BarChart3,
-  
   Globe,
   Sparkles,
   ChevronRight,
@@ -31,7 +30,11 @@ const LandingPage: React.FC = () => {
     totalUsers: 5420,
     assessmentsCompleted: 12340,
     companiesServed: 150,
-    successRate: 94
+    successRate: 94,
+    apiEndpoints: 60,
+    uiComponents: 50,
+    securityFeatures: 15,
+    aiProviders: 3
   });
 
   useEffect(() => {
@@ -41,7 +44,11 @@ const LandingPage: React.FC = () => {
         totalUsers: 5420,
         assessmentsCompleted: 12340,
         companiesServed: 150,
-        successRate: 94
+        successRate: 94,
+        apiEndpoints: 60,
+        uiComponents: 50,
+        securityFeatures: 15,
+        aiProviders: 3
       });
     }, 100);
     return () => clearTimeout(timer);
@@ -51,38 +58,44 @@ const LandingPage: React.FC = () => {
     {
       icon: <Brain className="w-8 h-8" />,
       title: 'AI-Powered Evaluation',
-      description: 'Advanced AI algorithms assess candidates with precision and eliminate bias',
-      color: 'from-indigo-500 to-purple-500'
+      description: 'Advanced AI algorithms with multi-provider support (Groq, OpenAI, Anthropic) assess candidates with precision and eliminate bias',
+      color: 'from-indigo-500 to-purple-500',
+      details: ['Multi-provider AI support', 'Bias-free evaluation', 'Intelligent scoring', 'Natural language processing']
     },
     {
       icon: <Target className="w-8 h-8" />,
       title: 'Real-World Simulations',
-      description: 'Test candidates in realistic job scenarios that mirror actual work challenges',
-      color: 'from-blue-500 to-cyan-500'
+      description: 'Test candidates in realistic job scenarios with 60+ API endpoints supporting comprehensive assessment workflows',
+      color: 'from-blue-500 to-cyan-500',
+      details: ['Job-specific scenarios', 'Interactive simulations', 'Performance tracking', 'Skill validation']
     },
     {
       icon: <Shield className="w-8 h-8" />,
-      title: 'Integrity Monitoring',
-      description: 'Built-in proctoring ensures fair and honest assessment completion',
-      color: 'from-emerald-500 to-teal-500'
+      title: 'Enterprise Security',
+      description: 'Built-in proctoring, JWT authentication, rate limiting, and 15+ security features ensure fair and secure assessments',
+      color: 'from-emerald-500 to-teal-500',
+      details: ['JWT authentication', 'Rate limiting', 'CORS protection', 'Data encryption']
     },
     {
       icon: <Zap className="w-8 h-8" />,
       title: 'Instant Results',
-      description: 'Get comprehensive evaluation reports in minutes, not days',
-      color: 'from-amber-500 to-orange-500'
+      description: 'Get comprehensive evaluation reports in minutes with real-time processing and advanced analytics',
+      color: 'from-amber-500 to-orange-500',
+      details: ['Real-time processing', 'Instant feedback', 'Automated scoring', 'Quick turnaround']
     },
     {
       icon: <BarChart3 className="w-8 h-8" />,
       title: 'Advanced Analytics',
-      description: 'Deep insights into candidate performance and skill gaps',
-      color: 'from-pink-500 to-rose-500'
+      description: 'Deep insights with 50+ UI components, responsive dashboards, and comprehensive reporting tools',
+      color: 'from-pink-500 to-rose-500',
+      details: ['Performance metrics', 'Skill gap analysis', 'Trend tracking', 'Custom reports']
     },
     {
       icon: <Globe className="w-8 h-8" />,
-      title: 'Global Reach',
-      description: 'Assess candidates anywhere, anytime with our cloud platform',
-      color: 'from-violet-500 to-purple-500'
+      title: 'Global Platform',
+      description: 'Assess candidates anywhere with multi-currency support, mobile-responsive design, and cloud infrastructure',
+      color: 'from-violet-500 to-purple-500',
+      details: ['Multi-currency support', 'Mobile responsive', 'Cloud-based', 'Global accessibility']
     }
   ];
 
@@ -174,31 +187,32 @@ const LandingPage: React.FC = () => {
       {/* Navigation */}
       <nav className="fixed top-0 w-full bg-white/95 backdrop-blur-lg z-50 border-b border-slate-200/60 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+          <div className="flex justify-between items-center h-14 sm:h-16">
             <div className="flex items-center space-x-2">
               <div className="relative">
-                <Brain className="w-8 h-8 text-indigo-600" />
-                <Sparkles className="w-4 h-4 text-amber-400 absolute -top-1 -right-1" />
+                <Brain className="w-7 h-7 sm:w-8 sm:h-8 text-indigo-600" />
+                <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-amber-400 absolute -top-1 -right-1" />
               </div>
-              <span className="text-2xl font-bold bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent">
+              <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent">
                 SimuAI
               </span>
             </div>
             
             {/* Desktop Menu */}
-            <div className="hidden md:flex items-center space-x-8">
-              <a href="#features" className="text-slate-700 hover:text-indigo-600 transition font-medium">Features</a>
-              <a href="#how-it-works" className="text-slate-700 hover:text-indigo-600 transition font-medium">How It Works</a>
-              <a href="#pricing" className="text-slate-700 hover:text-indigo-600 transition font-medium">Pricing</a>
-              <a href="#testimonials" className="text-slate-700 hover:text-indigo-600 transition font-medium">Testimonials</a>
+            <div className="hidden lg:flex items-center space-x-6 xl:space-x-8">
+              <a href="#features" className="text-slate-700 hover:text-indigo-600 transition font-medium text-sm xl:text-base">Features</a>
+              <a href="/about" className="text-slate-700 hover:text-indigo-600 transition font-medium text-sm xl:text-base">About</a>
+              <a href="#how-it-works" className="text-slate-700 hover:text-indigo-600 transition font-medium text-sm xl:text-base">How It Works</a>
+              <a href="#pricing" className="text-slate-700 hover:text-indigo-600 transition font-medium text-sm xl:text-base">Pricing</a>
+              <a href="#testimonials" className="text-slate-700 hover:text-indigo-600 transition font-medium text-sm xl:text-base">Testimonials</a>
             </div>
 
-            <div className="hidden md:flex items-center space-x-4">
-              <Button variant="ghost" onClick={() => navigate('/login')} className="text-slate-700 hover:text-indigo-600">
+            <div className="hidden md:flex items-center space-x-3 lg:space-x-4">
+              <Button variant="ghost" onClick={() => navigate('/login')} className="text-slate-700 hover:text-indigo-600 text-sm lg:text-base">
                 Sign In
               </Button>
-              <Button onClick={() => navigate('/register')} className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white shadow-lg shadow-indigo-500/30">
-                Get Started <ArrowRight className="ml-2 w-4 h-4" />
+              <Button onClick={() => navigate('/register')} className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white shadow-lg shadow-indigo-500/30 text-sm lg:text-base">
+                Get Started <ArrowRight className="ml-2 w-3 h-3 lg:w-4 lg:h-4" />
               </Button>
             </div>
 
@@ -220,13 +234,14 @@ const LandingPage: React.FC = () => {
             >
               <div className="flex flex-col space-y-4">
                 <a href="#features" className="text-slate-700 hover:text-indigo-600 transition font-medium">Features</a>
+                <a href="/about" className="text-slate-700 hover:text-indigo-600 transition font-medium">About</a>
                 <a href="#how-it-works" className="text-slate-700 hover:text-indigo-600 transition font-medium">How It Works</a>
                 <a href="#pricing" className="text-slate-700 hover:text-indigo-600 transition font-medium">Pricing</a>
                 <a href="#testimonials" className="text-slate-700 hover:text-indigo-600 transition font-medium">Testimonials</a>
-                <Button variant="ghost" onClick={() => navigate('/login')} className="w-full">
+                <Button variant="ghost" onClick={() => { navigate('/login'); setMobileMenuOpen(false); }} className="w-full">
                   Sign In
                 </Button>
-                <Button onClick={() => navigate('/register')} className="w-full bg-gradient-to-r from-indigo-600 to-blue-600">
+                <Button onClick={() => { navigate('/register'); setMobileMenuOpen(false); }} className="w-full bg-gradient-to-r from-indigo-600 to-blue-600">
                   Get Started
                 </Button>
               </div>
@@ -236,11 +251,11 @@ const LandingPage: React.FC = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4 relative overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/40">
+      <section className="pt-24 sm:pt-28 lg:pt-32 pb-16 sm:pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/40">
         {/* Background decoration */}
         <div className="absolute inset-0 -z-10">
-          <div className="absolute top-20 left-1/4 w-96 h-96 bg-indigo-200/30 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute top-20 left-1/4 w-64 h-64 sm:w-96 sm:h-96 bg-indigo-200/30 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-20 right-1/4 w-64 h-64 sm:w-96 sm:h-96 bg-blue-200/30 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
         </div>
         
         <div className="max-w-7xl mx-auto">
@@ -255,44 +270,44 @@ const LandingPage: React.FC = () => {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}
-              className="inline-flex items-center space-x-2 bg-indigo-100 text-indigo-700 px-4 py-2 rounded-full mb-6"
+              className="inline-flex items-center space-x-2 bg-indigo-100 text-indigo-700 px-3 py-2 sm:px-4 sm:py-2 rounded-full mb-4 sm:mb-6"
             >
-              <Sparkles className="w-4 h-4" />
-              <span className="text-sm font-semibold">AI-Powered Talent Assessment Platform</span>
+              <Sparkles className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="text-xs sm:text-sm font-semibold">AI-Powered Talent Assessment Platform</span>
             </motion.div>
 
-            <h1 className="text-5xl md:text-7xl font-bold text-slate-900 mb-6 leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-slate-900 mb-4 sm:mb-6 leading-tight">
               Hire Smarter with
               <br />
               <span className="bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent">
                 AI-Powered Assessments
               </span>
             </h1>
-            <p className="text-xl text-slate-600 mb-8 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-base sm:text-lg lg:text-xl text-slate-600 mb-6 sm:mb-8 max-w-3xl mx-auto leading-relaxed px-4 sm:px-0">
               Transform your recruitment process with intelligent simulations that evaluate real skills, 
               not just resumes. Make data-driven hiring decisions in minutes.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4 sm:px-0">
               <Button 
                 size="lg" 
-                className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white text-lg px-8 shadow-xl shadow-indigo-500/30 group" 
+                className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white text-base sm:text-lg px-6 sm:px-8 shadow-xl shadow-indigo-500/30 group w-full sm:w-auto" 
                 onClick={() => navigate('/register')}
               >
                 Start Free Trial 
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
-              <Button size="lg" variant="outline" className="text-lg px-8 border-2 border-slate-300 hover:border-indigo-600 hover:text-indigo-600 group">
-                <Play className="mr-2 w-5 h-5 group-hover:scale-110 transition-transform" /> 
+              <Button size="lg" variant="outline" className="text-base sm:text-lg px-6 sm:px-8 border-2 border-slate-300 hover:border-indigo-600 hover:text-indigo-600 group w-full sm:w-auto">
+                <Play className="mr-2 w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 transition-transform" /> 
                 Watch Demo
               </Button>
             </div>
 
             {/* Trust Badges */}
-            <div className="mt-12">
-              <p className="text-sm text-slate-500 mb-4">Trusted by leading companies worldwide</p>
-              <div className="flex flex-wrap justify-center gap-8 items-center opacity-60">
+            <div className="mt-8 sm:mt-12">
+              <p className="text-xs sm:text-sm text-slate-500 mb-3 sm:mb-4">Trusted by leading companies worldwide</p>
+              <div className="flex flex-wrap justify-center gap-4 sm:gap-6 lg:gap-8 items-center opacity-60">
                 {trustedCompanies.map((company, index) => (
-                  <div key={index} className="text-slate-400 font-semibold text-lg">
+                  <div key={index} className="text-slate-400 font-semibold text-sm sm:text-base lg:text-lg">
                     {company}
                   </div>
                 ))}
@@ -305,13 +320,13 @@ const LandingPage: React.FC = () => {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-20"
+            className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mt-12 sm:mt-16 lg:mt-20 px-4 sm:px-0"
           >
             {[
-              { label: 'Active Users', value: stats.totalUsers.toLocaleString(), icon: <Users className="w-6 h-6" />, color: 'indigo' },
-              { label: 'Assessments', value: stats.assessmentsCompleted.toLocaleString(), icon: <Target className="w-6 h-6" />, color: 'blue' },
-              { label: 'Companies', value: `${stats.companiesServed}+`, icon: <Award className="w-6 h-6" />, color: 'cyan' },
-              { label: 'Success Rate', value: `${stats.successRate}%`, icon: <TrendingUp className="w-6 h-6" />, color: 'emerald' }
+              { label: 'API Endpoints', value: `${stats.apiEndpoints}+`, icon: <Users className="w-5 h-5 sm:w-6 sm:h-6" />, color: 'indigo' },
+              { label: 'UI Components', value: `${stats.uiComponents}+`, icon: <Target className="w-5 h-5 sm:w-6 sm:h-6" />, color: 'blue' },
+              { label: 'Security Features', value: `${stats.securityFeatures}+`, icon: <Award className="w-5 h-5 sm:w-6 sm:h-6" />, color: 'emerald' },
+              { label: 'AI Providers', value: `${stats.aiProviders}`, icon: <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6" />, color: 'purple' }
             ].map((stat, index) => (
               <motion.div
                 key={index}
@@ -319,12 +334,12 @@ const LandingPage: React.FC = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.4 + index * 0.1 }}
               >
-                <Card className="p-6 text-center hover:shadow-xl transition-all duration-300 border-slate-200/60 bg-white/80 backdrop-blur-sm hover:-translate-y-1 group">
-                  <div className={`flex justify-center mb-3 text-${stat.color}-600 group-hover:scale-110 transition-transform`}>
+                <Card className="p-4 sm:p-6 text-center hover:shadow-xl transition-all duration-300 border-slate-200/60 bg-white/80 backdrop-blur-sm hover:-translate-y-1 group">
+                  <div className={`flex justify-center mb-2 sm:mb-3 text-${stat.color}-600 group-hover:scale-110 transition-transform`}>
                     {stat.icon}
                   </div>
-                  <div className="text-3xl font-bold text-slate-900 mb-1">{stat.value}</div>
-                  <div className="text-sm text-slate-600 font-medium">{stat.label}</div>
+                  <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 mb-1">{stat.value}</div>
+                  <div className="text-xs sm:text-sm text-slate-600 font-medium">{stat.label}</div>
                 </Card>
               </motion.div>
             ))}
@@ -333,25 +348,25 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-24 bg-white relative">
-        <div className="max-w-7xl mx-auto px-4 relative">
-          <div className="text-center mb-16">
+      <section id="features" className="py-16 sm:py-20 lg:py-24 bg-white relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <div className="text-center mb-12 sm:mb-16">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
             >
               <span className="text-indigo-600 font-semibold text-sm uppercase tracking-wide">Features</span>
-              <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4 mt-2">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mb-3 sm:mb-4 mt-2">
                 Powerful Features for Modern Hiring
               </h2>
-              <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+              <p className="text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto">
                 Everything you need to assess, evaluate, and hire top talent efficiently
               </p>
             </motion.div>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {features.map((feature, index) => (
               <motion.div
                 key={index}
@@ -360,21 +375,21 @@ const LandingPage: React.FC = () => {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
               >
-                <Card className="p-8 h-full hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border-slate-200/60 bg-white group relative overflow-hidden">
+                <Card className="p-6 sm:p-8 h-full hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border-slate-200/60 bg-white group relative overflow-hidden">
                   {/* Gradient overlay on hover */}
                   <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-5 transition-opacity duration-300`}></div>
                   
-                  <div className={`relative inline-flex p-3 rounded-xl bg-gradient-to-br ${feature.color} text-white mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                  <div className={`relative inline-flex p-2 sm:p-3 rounded-xl bg-gradient-to-br ${feature.color} text-white mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300`}>
                     {feature.icon}
                   </div>
-                  <h3 className="text-xl font-semibold text-slate-900 mb-3 group-hover:text-indigo-600 transition-colors">
+                  <h3 className="text-lg sm:text-xl font-semibold text-slate-900 mb-2 sm:mb-3 group-hover:text-indigo-600 transition-colors">
                     {feature.title}
                   </h3>
-                  <p className="text-slate-600 leading-relaxed">
+                  <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
                     {feature.description}
                   </p>
-                  <div className="mt-4 flex items-center text-indigo-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                    Learn more <ChevronRight className="w-4 h-4 ml-1" />
+                  <div className="mt-3 sm:mt-4 flex items-center text-indigo-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity text-sm sm:text-base">
+                    Learn more <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1" />
                   </div>
                 </Card>
               </motion.div>

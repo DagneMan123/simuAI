@@ -45,7 +45,8 @@ const CandidateDashboard: React.FC = () => {
     queryKey: ['candidate-simulations'],
     queryFn: async () => {
       const response = await candidateApi.getSimulations()
-      return response.data as CandidateSimulation[]
+      // Backend returns { success: true, data: [...], pagination: {...} }
+      return (response.data.data || []) as CandidateSimulation[]
     }
   })
 
@@ -92,71 +93,71 @@ const CandidateDashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/40">
       <Navbar />
       
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight">My Assessments</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">My Assessments</h1>
+          <p className="text-slate-600 mt-2">
             Track and complete your skill assessment simulations
           </p>
         </div>
 
         {/* Stats */}
         <div className="mb-8 grid gap-4 md:grid-cols-4">
-          <Card>
+          <Card className="border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Assessments</p>
-                  <p className="text-2xl font-bold">{simulations?.length || 0}</p>
+                  <p className="text-sm font-medium text-slate-600">Total Assessments</p>
+                  <p className="text-2xl font-bold text-slate-900">{simulations?.length || 0}</p>
                 </div>
-                <div className="rounded-lg bg-blue-100 p-3 dark:bg-blue-900">
-                  <BarChart3 className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                <div className="rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 p-3 shadow-lg shadow-blue-500/30">
+                  <BarChart3 className="h-6 w-6 text-white" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Active</p>
-                  <p className="text-2xl font-bold">{activeSimulations.length}</p>
+                  <p className="text-sm font-medium text-slate-600">Active</p>
+                  <p className="text-2xl font-bold text-slate-900">{activeSimulations.length}</p>
                 </div>
-                <div className="rounded-lg bg-yellow-100 p-3 dark:bg-yellow-900">
-                  <Clock className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
+                <div className="rounded-lg bg-gradient-to-br from-yellow-500 to-orange-500 p-3 shadow-lg shadow-yellow-500/30">
+                  <Clock className="h-6 w-6 text-white" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Completed</p>
-                  <p className="text-2xl font-bold">{completedSimulations.length}</p>
+                  <p className="text-sm font-medium text-slate-600">Completed</p>
+                  <p className="text-2xl font-bold text-slate-900">{completedSimulations.length}</p>
                 </div>
-                <div className="rounded-lg bg-green-100 p-3 dark:bg-green-900">
-                  <Award className="h-6 w-6 text-green-600 dark:text-green-400" />
+                <div className="rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 p-3 shadow-lg shadow-green-500/30">
+                  <Award className="h-6 w-6 text-white" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Avg. Score</p>
-                  <p className="text-2xl font-bold">--</p>
+                  <p className="text-sm font-medium text-slate-600">Avg. Score</p>
+                  <p className="text-2xl font-bold text-slate-900">--</p>
                 </div>
-                <div className="rounded-lg bg-purple-100 p-3 dark:bg-purple-900">
-                  <TrendingUp className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                <div className="rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 p-3 shadow-lg shadow-purple-500/30">
+                  <TrendingUp className="h-6 w-6 text-white" />
                 </div>
               </div>
             </CardContent>
@@ -165,14 +166,14 @@ const CandidateDashboard: React.FC = () => {
 
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="active">
+          <TabsList className="bg-white/80 backdrop-blur-sm border border-slate-200/60 shadow-md">
+            <TabsTrigger value="active" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-blue-600 data-[state=active]:text-white">
               Active ({activeSimulations.length})
             </TabsTrigger>
-            <TabsTrigger value="completed">
+            <TabsTrigger value="completed" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-600 data-[state=active]:to-emerald-600 data-[state=active]:text-white">
               Completed ({completedSimulations.length})
             </TabsTrigger>
-            <TabsTrigger value="expired">
+            <TabsTrigger value="expired" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-600 data-[state=active]:to-rose-600 data-[state=active]:text-white">
               Expired ({expiredSimulations.length})
             </TabsTrigger>
           </TabsList>
@@ -181,16 +182,16 @@ const CandidateDashboard: React.FC = () => {
           <TabsContent value="active">
             {isLoading ? (
               <div className="flex justify-center p-12">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent" />
               </div>
             ) : activeSimulations.length === 0 ? (
-              <Card>
+              <Card className="border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-lg">
                 <CardContent className="p-12 text-center">
-                  <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-                    <Hourglass className="h-6 w-6" />
+                  <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-100 to-indigo-100">
+                    <Hourglass className="h-6 w-6 text-indigo-600" />
                   </div>
-                  <h3 className="mb-2 text-lg font-semibold">No active assessments</h3>
-                  <p className="mb-4 text-muted-foreground">
+                  <h3 className="mb-2 text-lg font-semibold text-slate-900">No active assessments</h3>
+                  <p className="mb-4 text-slate-600">
                     You don't have any active assessments right now. Check back later for new invitations.
                   </p>
                 </CardContent>
@@ -198,7 +199,7 @@ const CandidateDashboard: React.FC = () => {
             ) : (
               <div className="space-y-4">
                 {activeSimulations.map((sim) => (
-                  <Card key={sim.id} className="hover:shadow-md transition-shadow">
+                  <Card key={sim.id} className="border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all hover:scale-[1.01]">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between">
                         <div className="space-y-3">
@@ -212,7 +213,7 @@ const CandidateDashboard: React.FC = () => {
                             {sim.simulation.description}
                           </p>
                           
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-4 text-sm text-slate-600">
                             <div className="flex items-center gap-1">
                               <Calendar className="h-4 w-4" />
                               Started {formatDate(sim.startedAt)}
@@ -229,19 +230,19 @@ const CandidateDashboard: React.FC = () => {
                           
                           {sim.status === 'IN_PROGRESS' && sim.timeSpent && (
                             <div className="pt-2">
-                              <div className="mb-1 flex justify-between text-sm">
+                              <div className="mb-1 flex justify-between text-sm text-slate-600">
                                 <span>Time Spent</span>
                                 <span>{Math.floor(sim.timeSpent / 60)}m {sim.timeSpent % 60}s</span>
                               </div>
                               <Progress 
                                 value={(sim.timeSpent / (sim.simulation.duration * 60)) * 100} 
-                                className="h-2"
+                                className="h-2 bg-slate-200"
                               />
                             </div>
                           )}
                         </div>
                         
-                        <Button asChild>
+                        <Button asChild className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 shadow-lg shadow-indigo-500/30">
                           <Link to={`/simulations/${sim.simulation.id}`}>
                             {sim.status === 'INVITED' ? 'Start Assessment' : 'Continue'}
                             <Play className="ml-2 h-4 w-4" />
@@ -258,16 +259,16 @@ const CandidateDashboard: React.FC = () => {
           {/* Completed Tab */}
           <TabsContent value="completed">
             {completedSimulations.length === 0 ? (
-              <Card>
+              <Card className="border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-lg">
                 <CardContent className="p-12 text-center">
-                  <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-                    <Award className="h-6 w-6" />
+                  <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-green-100 to-emerald-100">
+                    <Award className="h-6 w-6 text-green-600" />
                   </div>
-                  <h3 className="mb-2 text-lg font-semibold">No completed assessments</h3>
-                  <p className="mb-4 text-muted-foreground">
+                  <h3 className="mb-2 text-lg font-semibold text-slate-900">No completed assessments</h3>
+                  <p className="mb-4 text-slate-600">
                     Complete an assessment to see your results here.
                   </p>
-                  <Button asChild>
+                  <Button asChild className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700">
                     <Link to="/dashboard">View Active Assessments</Link>
                   </Button>
                 </CardContent>
@@ -275,7 +276,7 @@ const CandidateDashboard: React.FC = () => {
             ) : (
               <div className="space-y-4">
                 {completedSimulations.map((sim) => (
-                  <Card key={sim.id}>
+                  <Card key={sim.id} className="border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all">
                     <CardContent className="p-6">
                       <div className="space-y-4">
                         <div className="flex items-center justify-between">
@@ -330,13 +331,13 @@ const CandidateDashboard: React.FC = () => {
           {/* Expired Tab */}
           <TabsContent value="expired">
             {expiredSimulations.length === 0 ? (
-              <Card>
+              <Card className="border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-lg">
                 <CardContent className="p-12 text-center">
-                  <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-                    <AlertCircle className="h-6 w-6" />
+                  <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-slate-100 to-slate-200">
+                    <AlertCircle className="h-6 w-6 text-slate-600" />
                   </div>
-                  <h3 className="mb-2 text-lg font-semibold">No expired assessments</h3>
-                  <p className="mb-4 text-muted-foreground">
+                  <h3 className="mb-2 text-lg font-semibold text-slate-900">No expired assessments</h3>
+                  <p className="mb-4 text-slate-600">
                     All your assessments are up to date.
                   </p>
                 </CardContent>
@@ -344,7 +345,7 @@ const CandidateDashboard: React.FC = () => {
             ) : (
               <div className="space-y-4">
                 {expiredSimulations.map((sim) => (
-                  <Card key={sim.id}>
+                  <Card key={sim.id} className="border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-lg">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between">
                         <div className="space-y-2">

@@ -9,69 +9,53 @@ class CandidateController {
     try {
       const { page = 1, limit = 10, status } = req.query;
       const skip = (page - 1) * limit;
-      const candidateId = req.user.id;
+      const candidateId = req.user.id; // From JWT token via auth middleware
 
+      // Get UserSimulations for this candidate
       const where = {
-        OR: [
-          // Invited simulations
-          {
-            invitations: {
-              some: {
-                candidateId,
-                status: status || undefined
-              }
-            }
-          },
-          // Public simulations (if any)
-          {
-            isPublished: true,
-            // Add any public access criteria here
-          }
-        ]
+        userId: candidateId
       };
 
-      const [simulations, total] = await Promise.all([
-        prisma.simulation.findMany({
+      if (status) {
+        where.status = status;
+      }
+
+      const [userSimulations, total] = await Promise.all([
+        prisma.userSimulation.findMany({
           where,
           skip: parseInt(skip),
           take: parseInt(limit),
           include: {
-            employer: {
-              select: {
-                firstName: true,
-                lastName: true,
-                company: true
-              }
-            },
-            invitations: {
-              where: { candidateId },
-              select: {
-                status: true,
-                sentAt: true,
-                expiresAt: true
-              }
-            },
-            _count: {
-              select: {
-                steps: true
+            simulation: {
+              include: {
+                employer: {
+                  select: {
+                    firstName: true,
+                    lastName: true,
+                    company: true
+                  }
+                },
+                _count: {
+                  select: {
+                    steps: true
+                  }
+                }
               }
             }
           },
-          orderBy: { createdAt: 'desc' }
+          orderBy: { startedAt: 'desc' }
         }),
-        prisma.simulation.count({ where })
+        prisma.userSimulation.count({ where })
       ]);
 
       res.json({
         success: true,
-        data: {
-          simulations,
-          pagination: {
-            page: parseInt(page),
-            limit: parseInt(limit),
-            total,
-            pages: Math.ceil(total / limit)
-          }
+        data: userSimulations,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          pages: Math.ceil(total / limit)
         }
       });
     } catch (error) {

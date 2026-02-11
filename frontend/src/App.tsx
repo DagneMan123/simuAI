@@ -8,7 +8,6 @@ import { AuthProvider } from '@/contexts/AuthContext'
 import { SocketProvider } from '@/contexts/SocketContext'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import ProtectedRoute from '@/components/ProtectedRoute'
-import SessionTimeout from '@/components/SessionTimeout'
 
 // Pages
 import LandingPage from '@/pages/LandingPage'
@@ -113,11 +112,6 @@ const App: React.FC = () => {
                   {/* Catch-all route */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
-                
-                {/* Session Timeout for authenticated users */}
-                <ProtectedRoute>
-                  <SessionTimeout timeoutInMinutes={30} warningInMinutes={5} />
-                </ProtectedRoute>
                 
                 <Toaster />
               </SocketProvider>

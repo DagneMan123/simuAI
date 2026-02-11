@@ -1,0 +1,40 @@
+╔═══════════════════════════════════════════════════════════╗
+║                                                           ║
+║              DOUBLE-CLICK THIS FILE:                     ║
+║                                                           ║
+║              SETUP_AND_START.bat                         ║
+║                                                           ║
+║              It will fix everything!                     ║
+║                                                           ║
+╚═══════════════════════════════════════════════════════════╝
+
+
+OR RUN THESE COMMANDS MANUALLY:
+────────────────────────────────────────────────────────────
+
+cd backend
+npx prisma generate
+npx prisma db push
+node setup-db.js
+npm start
+
+
+AFTER SETUP, USE THESE TO LOGIN:
+────────────────────────────────────────────────────────────
+
+Admin:
+Email: admin@simuai.com
+Password: password123
+
+Employer:
+Email: employer@simuai.com
+Password: password123
+
+Candidate:
+Email: candidate@simuai.com
+Password: password123
+
+
+THAT'S IT!
+────────────────────────────────────────────────────────────
+Backend will work after running the setup!

@@ -1,0 +1,194 @@
+╔═══════════════════════════════════════════════════════════╗
+║                                                           ║
+║     ⚠️  WEBSITE NOT DISPLAYING - COMPLETE SOLUTION       ║
+║                                                           ║
+╚═══════════════════════════════════════════════════════════╝
+
+
+YOUR PROBLEM:
+────────────────────────────────────────────────────────────
+❌ Homepage not showing in browser
+❌ Blank page or "Cannot connect" error
+❌ Website not loading
+
+
+MOST LIKELY CAUSE:
+────────────────────────────────────────────────────────────
+🔴 Frontend development server is NOT RUNNING!
+
+The code is perfect, but you need to START the server first.
+
+
+SOLUTION - METHOD 1 (EASIEST):
+────────────────────────────────────────────────────────────
+
+1. Double-click this file:
+   start-frontend.bat
+
+2. Wait for message:
+   "Local: http://localhost:3000/"
+
+3. Open browser and go to:
+   http://localhost:3000/
+
+DONE!
+
+
+SOLUTION - METHOD 2 (MANUAL):
+────────────────────────────────────────────────────────────
+
+STEP 1: Open Terminal
+   - Press Windows Key
+   - Type "cmd" or "powershell"
+   - Press Enter
+
+STEP 2: Navigate to Frontend Folder
+   cd C:\Users\Hena\Desktop\simuAI\frontend
+
+STEP 3: Start Server
+   npm run dev
+
+STEP 4: Wait for This Message
+   ➜  Local:   http://localhost:3000/
+
+STEP 5: Open Browser
+   - Open Chrome/Edge/Firefox
+   - Go to: http://localhost:3000/
+
+
+WHAT YOU SHOULD SEE IN TERMINAL:
+────────────────────────────────────────────────────────────
+✅ VITE v5.x.x  ready in xxx ms
+✅ ➜  Local:   http://localhost:3000/
+✅ ➜  Network: use --host to expose
+
+If you see this, server is running!
+
+
+WHAT YOU SHOULD SEE IN BROWSER:
+────────────────────────────────────────────────────────────
+✅ SimuAI logo and navigation bar
+✅ "Sign In" and "Get Started" buttons
+✅ Hero section: "Hire Smarter with AI-Powered Assessments"
+✅ Features section with 6 feature cards
+✅ Pricing section with 3 plans
+✅ Testimonials section
+✅ Footer
+
+
+IF YOU SEE ERRORS IN TERMINAL:
+────────────────────────────────────────────────────────────
+
+Error: "Cannot find module" or "Module not found"
+→ Solution:
+   npm install
+   npm run dev
+
+Error: "Port 3000 is already in use"
+→ Solution:
+   netstat -ano | findstr :3000
+   taskkill /PID <number> /F
+   npm run dev
+
+Error: "npm is not recognized"
+→ Solution:
+   Install Node.js from: https://nodejs.org/
+
+
+IF BROWSER SHOWS BLANK PAGE:
+────────────────────────────────────────────────────────────
+
+1. Check if server is running (see terminal)
+2. Check URL is correct: http://localhost:3000/
+3. Clear browser cache:
+   - Press: Ctrl + Shift + Delete
+   - Clear: Cached images and files
+   - Click: Clear data
+4. Hard refresh: Ctrl + Shift + R
+5. Try Incognito: Ctrl + Shift + N
+
+
+IF BROWSER SHOWS "CANNOT CONNECT":
+────────────────────────────────────────────────────────────
+
+This means server is NOT running!
+
+1. Go back to terminal
+2. Make sure you see: "Local: http://localhost:3000/"
+3. If not, run: npm run dev
+4. Wait for server to start
+5. Then try browser again
+
+
+CHECKLIST:
+────────────────────────────────────────────────────────────
+□ Terminal is open
+□ You're in frontend folder
+□ You ran: npm run dev
+□ Terminal shows: "Local: http://localhost:3000/"
+□ Browser URL is: http://localhost:3000/
+□ Browser cache is cleared
+
+
+COMMON MISTAKES:
+────────────────────────────────────────────────────────────
+❌ Forgot to start server (npm run dev)
+❌ Using wrong URL (5173 or 5000 instead of 3000)
+❌ Server crashed (check terminal for errors)
+❌ Browser cache (clear it!)
+❌ Wrong folder (must be in frontend folder)
+
+
+BACKEND SERVER (SEPARATE):
+────────────────────────────────────────────────────────────
+You also need backend server running:
+
+1. Open ANOTHER terminal
+2. cd C:\Users\Hena\Desktop\simuAI\backend
+3. npm start
+
+Backend runs on: http://localhost:5000/
+Frontend runs on: http://localhost:3000/
+
+You need BOTH running!
+
+
+QUICK TEST:
+────────────────────────────────────────────────────────────
+1. Double-click: start-frontend.bat
+2. Wait 10 seconds
+3. Open browser: http://localhost:3000/
+4. Should see homepage!
+
+
+STILL NOT WORKING?
+────────────────────────────────────────────────────────────
+Check these:
+
+1. Is terminal showing errors?
+   → Copy the error and read it carefully
+
+2. Is browser console showing errors?
+   → Press F12, go to Console tab
+
+3. Is the correct port?
+   → Should be 3000, not 5173 or 5000
+
+4. Did you install dependencies?
+   → Run: npm install
+
+5. Is Node.js installed?
+   → Run: node --version
+   → Should show: v18.x.x or higher
+
+
+═══════════════════════════════════════════════════════════
+SUMMARY: START SERVER FIRST, THEN OPEN BROWSER!
+═══════════════════════════════════════════════════════════
+
+Commands:
+1. cd frontend
+2. npm run dev
+3. Open browser: http://localhost:3000/
+
+That's it!

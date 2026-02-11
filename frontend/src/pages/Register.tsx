@@ -6,16 +6,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
-import { authApi, apiHelpers, UserRole } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { register } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<UserRole>('CANDIDATE');
+  const [selectedRole, setSelectedRole] = useState<'EMPLOYER' | 'CANDIDATE'>('CANDIDATE');
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -28,13 +29,13 @@ const Register: React.FC = () => {
 
   const roles = [
     {
-      value: 'CANDIDATE' as UserRole,
+      value: 'CANDIDATE' as const,
       label: 'Job Seeker',
       description: 'Looking for opportunities and want to showcase skills',
       icon: <User className="w-6 h-6" />
     },
     {
-      value: 'EMPLOYER' as UserRole,
+      value: 'EMPLOYER' as const,
       label: 'Employer',
       description: 'Hiring talent and creating assessments',
       icon: <Building className="w-6 h-6" />
@@ -71,7 +72,7 @@ const Register: React.FC = () => {
 
     setLoading(true);
     try {
-      const response = await authApi.register({
+      await register({
         email: formData.email,
         password: formData.password,
         firstName: formData.firstName,
@@ -80,13 +81,6 @@ const Register: React.FC = () => {
         company: selectedRole === 'EMPLOYER' ? formData.company : undefined
       });
 
-      const { tokens, user } = response.data;
-      
-      // Store tokens and user data
-      apiHelpers.setToken(tokens.accessToken);
-      localStorage.setItem('refreshToken', tokens.refreshToken);
-      localStorage.setItem('user', JSON.stringify(user));
-
       toast({
         title: 'Account created!',
         description: 'Welcome to SimuAI! Your account has been created successfully.',
@@ -94,9 +88,6 @@ const Register: React.FC = () => {
 
       // Redirect based on role
       switch (selectedRole) {
-        case 'ADMIN':
-          navigate('/admin');
-          break;
         case 'EMPLOYER':
           navigate('/dashboard');
           break;
